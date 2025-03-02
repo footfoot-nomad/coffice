@@ -321,7 +321,7 @@ export default function ProfileEditModal({ user, onClose, onUpdate }) {
             <div className="flex justify-center items-center">
               <div className="rounded-2xl overflow-hidden border-2 border-black w-[160px] aspect-square relative">
                 <div 
-                  className="absolute top-2 right-2 z-30 bg-white/80 rounded-full p-1.5 cursor-pointer hover:bg-white"
+                  className="absolute top-2 right-2 z-30 bg-white/80 rounded-full p-1.5 cursor-pointer hover:bg-white text-gray-500 hover:text-gray-700"
                   onClick={handleCharacterClick}
                 >
                   <svg 
@@ -537,32 +537,29 @@ export default function ProfileEditModal({ user, onClose, onUpdate }) {
                 <label className="text-sm text-black block mb-1 font-bold">주소</label>
                 <p className="text-base text-black">{selectedOffice.address_office}</p>
               </div>
-              <div>
-                <label className="text-sm text-black block mb-1 font-bold">전화번호</label>
-                <p className="text-base text-black">{selectedOffice.tel_office}</p>
-              </div>
+              
               <div>
                 <label className="text-sm text-black block mb-1 font-bold">운영시간</label>
                 <div className="space-y-1 text-sm text-black">
-                  <p>월요일: {selectedOffice.operation_office[0] ? 
+                  <p>월요일  {selectedOffice.operation_office[0] ? 
                     `${selectedOffice.operation_office[0][0]} ~ ${selectedOffice.operation_office[0][1]}` : 
                     '휴무'}</p>
-                  <p>화요일: {selectedOffice.operation_office[1] ? 
+                  <p>화요일  {selectedOffice.operation_office[1] ? 
                     `${selectedOffice.operation_office[1][0]} ~ ${selectedOffice.operation_office[1][1]}` : 
                     '휴무'}</p>
-                  <p>수요일: {selectedOffice.operation_office[2] ? 
+                  <p>수요일  {selectedOffice.operation_office[2] ? 
                     `${selectedOffice.operation_office[2][0]} ~ ${selectedOffice.operation_office[2][1]}` : 
                     '휴무'}</p>
-                  <p>목요일: {selectedOffice.operation_office[3] ? 
+                  <p>목요일  {selectedOffice.operation_office[3] ? 
                     `${selectedOffice.operation_office[3][0]} ~ ${selectedOffice.operation_office[3][1]}` : 
                     '휴무'}</p>
-                  <p>금요일: {selectedOffice.operation_office[4] ? 
+                  <p>금요일  {selectedOffice.operation_office[4] ? 
                     `${selectedOffice.operation_office[4][0]} ~ ${selectedOffice.operation_office[4][1]}` : 
                     '휴무'}</p>
-                  <p>토요일: {selectedOffice.operation_office[5] ? 
+                  <p>토요일  {selectedOffice.operation_office[5] ? 
                     `${selectedOffice.operation_office[5][0]} ~ ${selectedOffice.operation_office[5][1]}` : 
                     '휴무'}</p>
-                  <p>일요일: {selectedOffice.operation_office[6] ? 
+                  <p>일요일  {selectedOffice.operation_office[6] ? 
                     `${selectedOffice.operation_office[6][0]} ~ ${selectedOffice.operation_office[6][1]}` : 
                     '휴무'}</p>
                 </div>

@@ -162,8 +162,8 @@ const Timer = ({ selectedSubscription, officeInfo, selectedDate }) => {
 // ProfileCharacter를 메모이제이션
 const MemoizedProfileCharacter = React.memo(ProfileCharacter);
 
-// MemberCard 컴포넌트 최적화
-const MemberCard = React.memo(({ 
+// MemberCard 컴포넌트 최적화 (memo 제거)
+const MemberCard = ({ 
   member, 
   date, 
   officeId, 
@@ -179,6 +179,9 @@ const MemberCard = React.memo(({
   const cardRef = useRef(null);
   const tooltipRef = useRef(null);
   const tooltipTimerRef = useRef(null);
+  const [showMessageModal, setShowMessageModal] = useState(false);
+  const [showReasonModal, setShowReasonModal] = useState(false);
+  const [reasonMessage, setReasonMessage] = useState('');
   
   // 현재 사용자 여부 확인
   const isCurrentUser = member.id_user === selectedUserData?.id_user;
@@ -261,8 +264,126 @@ const MemberCard = React.memo(({
     return order > 0 ? order.toString() : '';
   };
 
+  // 카드 클릭 핸들러 수정
+  const handleCardClick = async () => {
+    const memberMessage = memberStatus[officeId]?.dates[date]?.members[member.id_user]?.message_user;
+    const isCurrentUser = member.id_user === selectedUserData?.id_user;
+    const userStatus = status?.status_user;
+
+    // 현재 사용자이고 지각/결석인 경우
+    if (isCurrentUser && (userStatus === '지각' || userStatus === '결석')) {
+      if (memberMessage) {
+        // 이미 사유서가 있는 경우 메시지 모달 표시
+        setShowMessageModal(true);
+      } else {
+        // 사유서가 없는 경우 사유서 작성 모달 표시
+        setShowReasonModal(true);
+      }
+      return;
+    }
+
+    // 다른 사용자의 메시지 표시
+    if (memberMessage) {
+      setShowMessageModal(true);
+    }
+  };
+
+  // 사유서 제출 핸들러
+  const handleReasonSubmit = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('event_log')
+        .insert([
+          {
+            id_coffice: officeId,
+            id_user: member.id_user,
+            type_event: status.status_user, // '지각' 또는 '결석'
+            message_event: reasonMessage,
+            date_event: date,
+            timestamp_event: new Date().toISOString()
+          }
+        ]);
+
+      if (error) throw error;
+
+      // 성공 메시지 표시
+      const successMessage = document.createElement('div');
+      successMessage.className = 'alert alert-success w-[288px] fixed top-[calc(70vh+50px)] left-1/2 -translate-x-1/2 z-50';
+      successMessage.innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <span>사유서가 제출되었습니다.</span>
+      `;
+      document.body.appendChild(successMessage);
+      setTimeout(() => successMessage.remove(), 3000);
+
+      setShowReasonModal(false);
+      setReasonMessage('');
+    } catch (error) {
+      console.error('사유서 제출 실패:', error);
+      
+      // 에러 메시지 표시
+      const errorMessage = document.createElement('div');
+      errorMessage.className = 'alert alert-error w-[288px] fixed top-[calc(70vh+50px)] left-1/2 -translate-x-1/2 z-50';
+      errorMessage.innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <span>사유서 제출에 실패했습니다.</span>
+      `;
+      document.body.appendChild(errorMessage);
+      setTimeout(() => errorMessage.remove(), 3000);
+    }
+  };
+
   return (
     <>
+      {/* 메시지 모달 - 수정 버튼 추가 */}
+      {showMessageModal && memberStatus[officeId]?.dates[date]?.members[member.id_user]?.message_user && (
+        <div 
+          className="fixed inset-0 bg-black/80 flex items-center justify-center z-[9999]"
+          onClick={() => setShowMessageModal(false)}
+        >
+          <div 
+            className="bg-white rounded-2xl p-6 w-[300px] max-w-[90vw]"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <div className="w-[40px] h-[40px] rounded-full overflow-hidden border border-gray-200">
+                  <ProfileCharacter
+                    profileStyle={memberInfo?.profilestyle_user}
+                    size={40}
+                  />
+                </div>
+                <span className="text-lg font-bold text-gray-800">
+                  {memberInfo?.name_user || '사용자'}
+                </span>
+              </div>
+              {/* 현재 사용자이고 지각/결석인 경우에만 수정 버튼 표시 */}
+              {member.id_user === selectedUserData?.id_user && 
+               (status?.status_user === '지각' || status?.status_user === '결석') && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowMessageModal(false);
+                    setReasonMessage(memberStatus[officeId]?.dates[date]?.members[member.id_user]?.message_user || '');
+                    setShowReasonModal(true);
+                  }}
+                  className="px-3 py-1 text-sm bg-[#FFFF00] text-black border-1 border-black rounded-lg"
+                >
+                  수정
+                </button>
+              )}
+            </div>
+            <p className="text-gray-600 text-base break-words whitespace-pre-line">
+              {memberStatus[officeId]?.dates[date]?.members[member.id_user]?.message_user}
+            </p>
+          </div>
+        </div>
+      )}
+      
       {/* 툴크 */}
       {showTooltip && ((status?.message_user && !isEditing) || isEditing) && (
         <div 
@@ -303,8 +424,54 @@ const MemberCard = React.memo(({
         </div>
       )}
       
+      {/* 사유서 작성 모달 */}
+      {showReasonModal && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-[9999]">
+          <div 
+            className="bg-white rounded-2xl p-6 w-[300px] max-w-[90vw]"
+            onClick={e => e.stopPropagation()}
+          >
+            <h3 className="text-lg font-bold mb-4 text-gray-800">
+              {status.status_user === '지각' ? '지각 사유서' : '결석 사유서'} 작성
+            </h3>
+            <textarea
+              value={reasonMessage}
+              onChange={(e) => setReasonMessage(e.target.value)}
+              placeholder={`${status.status_user === '지각' ? '지각' : '결석'} 사유를 입력해주세요.`}
+              className="w-full border rounded-xl px-4 py-3 text-base text-gray-800"
+              rows={3}
+              maxLength={100}
+            />
+            <p className="text-sm text-gray-500 mt-2">
+              최대 100자까지 입력 가능합니다. ({reasonMessage.length}/100)
+            </p>
+            <div className="flex gap-2 mt-4">
+              <button
+                onClick={() => {
+                  setShowReasonModal(false);
+                  setReasonMessage('');
+                }}
+                className="flex-1 btn btn-outline text-gray-800"
+              >
+                취소
+              </button>
+              <button
+                onClick={handleReasonSubmit}
+                disabled={!reasonMessage.trim()}
+                className="flex-1 btn bg-[#FFFF00] hover:bg-[#FFFF00] text-black border-1 border-black shadow-none"
+              >
+                제출
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      
       {/* 카드 본체 */}
-      <div className="relative">
+      <div 
+        className="relative cursor-pointer" 
+        onClick={handleCardClick}
+      >
         {/* 출석 순서 뱃지 */}
         {(status?.status_user === '출석' || status?.status_user === '일등' || status?.status_user === '지각') && (
           <div className="absolute bottom-[-12px] left-1/2 transform -translate-x-1/2 z-10">
@@ -315,7 +482,7 @@ const MemberCard = React.memo(({
             </div>
           </div>
         )}
-        <div ref={cardRef} className="shrink-0 flex flex-col items-center w-[100px] sm:w-[120px] md:w-[140px] border-2 border-gray-600 rounded-lg shadow-xs bg-white cursor-pointer overflow-hidden">
+        <div ref={cardRef} className="shrink-0 flex flex-col items-center w-[100px] sm:w-[120px] md:w-[140px] border-2 border-gray-600 rounded-lg shadow-xs bg-white overflow-hidden">
           {/* 출석 뱃지 */}
           {status?.status_user && (
             <div className="absolute right-1 top-1 z-10">
@@ -361,17 +528,7 @@ const MemberCard = React.memo(({
       </div>
     </>
   );
-}, (prevProps, nextProps) => {
-  return (
-    prevProps.member.id_user === nextProps.member.id_user &&
-    prevProps.date === nextProps.date &&
-    prevProps.officeId === nextProps.officeId &&
-    JSON.stringify(prevProps.memberInfo) === JSON.stringify(nextProps.memberInfo) &&
-    JSON.stringify(prevProps.status) === JSON.stringify(nextProps.status) &&
-    prevProps.selectedUserData?.id_user === nextProps.selectedUserData?.id_user &&
-    JSON.stringify(prevProps.memberStatus) === JSON.stringify(nextProps.memberStatus)
-  );
-});
+};
 
 // Haversine 거리 계산 함수 추가 (상단에 추가)
 const calculateDistance = (lat1, lon1, lat2, lon2) => {
@@ -1318,13 +1475,13 @@ export default function Home() {
               >
                 <div className="flex-1">
                   <div className="flex items-center gap-2 text-black whitespace-nowrap">
-                    <span className="text-[17px] font-bold">
+                    <span className="text-[17px] font-bold leading-none flex items-center">
                       {selectedSubscription?.name_office || subscriptionDetails[0].name_office}
                     </span>
-                    <span className="text-[15px] font-medium">
+                    <span className="text-gray-500 leading-none flex items-center">
                       {parseInt((selectedSubscription?.month_coffice || subscriptionDetails[0].month_coffice).substring(2, 4))}월
                     </span>
-                    <span className="text-gray-500">
+                    <span className="text-gray-500 leading-none flex items-center">
                       {selectedSubscription?.groupname_coffice || subscriptionDetails[0].groupname_coffice}
                     </span>
                   </div>
@@ -1350,13 +1507,13 @@ export default function Home() {
                       >
                         <div className="flex-1">
                           <div className="flex items-center gap-2 text-black whitespace-nowrap">
-                            <span className="text-[17px] font-bold">
+                            <span className="text-[17px] font-bold leading-none">
                               {subscription.name_office}
                             </span>
-                            <span className="text-[15px] font-medium">
+                            <span className="text-gray-500 leading-none">
                               {parseInt(subscription.month_coffice.substring(2, 4))}월
                             </span>
-                            <span className="text-gray-500">
+                            <span className="text-gray-500 leading-none">
                               {subscription.groupname_coffice}
                             </span>
                           </div>
@@ -1459,10 +1616,10 @@ export default function Home() {
 
             <div className="flex flex-col items-start mt-8 mb-4 px-4">
               <div className="flex items-center gap-0 mb-1">
-                <div className="text-[19px] font-semibold text-gray-500">우리반 메세지</div>
+                <div className="text-[19px] font-semibold text-gray-800">1등의 메시지</div>
                 <div className="relative">
                   <div 
-                    className="w-5 h-5 flex items-center justify-center cursor-pointer"
+                    className="w- h-5 flex items-center justify-center cursor-pointer"
                     onClick={(e) => {
                       e.stopPropagation();
                       const tooltip = e.currentTarget.nextElementSibling;
@@ -1479,13 +1636,13 @@ export default function Home() {
                       }, 5000);
                     }}
                   >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                   </div>
                   <div className="message-tooltip hidden absolute left-[-12px] bottom-full mb-2 w-[180px] bg-gray-800/80 text-white text-sm rounded-lg p-3 z-50">
                     <div className="text-gray-200">일등으로 출석한 사람이</div>
-                    <div className="text-gray-200">메세지를 수정할 수 있어요.</div>
+                    <div className="text-gray-200">메시지를 수정할 수 있어요.</div>
                     <div className="absolute left-4 top-full w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[6px] border-t-gray-800/80"></div>
                   </div>
                 </div>
@@ -1499,9 +1656,9 @@ export default function Home() {
                   return selectedDate === today && currentUserStatus === '일등' && (
                     <button 
                       onClick={() => setShowMessageModal(true)}
-                      className="ml-2 px-2 py-0.5 bg-gray-500 text-white text-xs rounded-lg hover:bg-gray-700 transition-colors"
+                      className="ml-2 px-2 py-0.5 text-black text-xs rounded-lg bg-[#FFFF00] border-1 border-black"
                     >
-                      수정
+                      작성
                     </button>
                   );
                 })()}
@@ -1516,14 +1673,14 @@ export default function Home() {
             {showMessageModal && (
               <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-[100]">
                 <div className="bg-white rounded-2xl p-6 w-[300px]">
-                  <h3 className="text-lg font-bold mb-4">메시지 수정</h3>
+                  <h3 className="text-lg font-bold mb-4 text-gray-800">메시지 작성</h3>
                   <div className="space-y-2">
                     <textarea
                       maxLength={40}
                       value={newMessage}
                       onChange={(e) => setNewMessage(e.target.value)}
                       placeholder="메시지를 입력하세요"
-                      className="w-full border rounded-xl px-4 py-3 text-base"
+                      className="w-full border rounded-xl px-4 py-3 text-base text-gray-800"
                       rows={2}
                       required
                     />
@@ -1535,13 +1692,13 @@ export default function Home() {
                     <button
                       type="button"
                       onClick={() => setShowMessageModal(false)}
-                      className="flex-1 btn btn-outline"
+                      className="flex-1 btn btn-outline text-gray-800"
                     >
                       취소
                     </button>
                     <button
                       onClick={updateCofficeMessage}
-                      className="flex-1 btn btn-primary"
+                      className="flex-1 btn bg-[#FFFF00] hover:bg-[#FFFF00] text-black border-1 border-black shadow-none"
                     >
                       저장
                     </button>
