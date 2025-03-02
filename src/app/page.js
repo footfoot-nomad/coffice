@@ -268,18 +268,14 @@ const MemberCard = ({
   // 사유서 제출 핸들러
   const handleReasonSubmit = async () => {
     try {
+      // 기존 이벤트 업데이트
       const { data, error } = await supabase
         .from('event_log')
-        .insert([
-          {
-            id_coffice: officeId,
-            id_user: member.id_user,
-            type_event: status.status_user, // '지각' 또는 '결석'
-            message_event: reasonMessage,
-            date_event: date,
-            timestamp_event: new Date().toISOString()
-          }
-        ]);
+        .update({ message_event: reasonMessage })
+        .eq('id_coffice', officeId.toString())
+        .eq('id_user', member.id_user.toString())
+        .eq('date_event', date)
+        .eq('type_event', status.status_user);
 
       if (error) throw error;
 
@@ -323,24 +319,60 @@ const MemberCard = ({
           onClick={() => setShowMessageModal(false)}
         >
           <div 
-            className="bg-white rounded-2xl p-6 w-[300px] max-w-[90vw]"
+            className="bg-white rounded-2xl pt-12 pb-12 p-8 w-[320px] max-w-[90vw] relative"
             onClick={e => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2">
-                <div className="w-[40px] h-[40px] rounded-full overflow-hidden border border-gray-200">
-                  <ProfileCharacter
-                    profileStyle={memberInfo?.profilestyle_user}
-                    size={40}
-                  />
-                </div>
-                <span className="text-lg font-bold text-gray-800">
-                  {memberInfo?.name_user || '사용자'}
-                </span>
+            {/* 닫기 버튼 추가 */}
+            <button
+              onClick={() => setShowMessageModal(false)}
+              className="absolute right-4 top-4 w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+
+            {/* 제목 영역 */}
+            <div className="text-center mb-8"> {/* mb-6에서 mb-8로 변경 */}
+              <h2 className="text-2xl font-bold text-gray-800">
+                {status?.status_user === '지각' ? '지각 사유서' : '결석 사유서'}
+              </h2>
+              <p className="text-sm text-gray-500 mt-2"> {/* mt-1에서 mt-2로 변경 */}
+                {date}
+              </p>
+            </div>
+
+            {/* 내용 영역 - 공책 스타일 */}
+            <div className="bg-[#fff9e5] rounded-lg p-4 min-h-[120px] relative border border-gray-300 shadow-inner">
+              {/* 공책 라인 효과 */}
+              <div className="absolute left-0 top-0 bottom-0 w-[1px] bg-[#ff9b9b] ml-[20px]"></div>
+              <p className="text-gray-700 text-base whitespace-pre-line pl-[30px] leading-[28px]" 
+                 style={{
+                   backgroundImage: 'repeating-linear-gradient(transparent, transparent 27px, #ddd 28px)',
+                   paddingTop: '4px'
+                 }}>
+                {memberStatus[officeId]?.dates[date]?.members[member.id_user]?.message_user}
+              </p>
+            </div>
+
+            {/* 작성자 영역 */}
+            <div className="mt-6 flex justify-end items-center gap-3 pr-2"> {/* mt-4에서 mt-6으로 변경, 우측 안쪽 여백 추가 */}
+            <span className="text-gray-800 font-medium">
+                {memberInfo?.name_user || '사용자'}
+              </span>
+              <div className="w-[32px] h-[32px] rounded-lg overflow-hidden border-1 border-gray-400">
+                <ProfileCharacter
+                  profileStyle={memberInfo?.profilestyle_user}
+                  size={30}
+                />
               </div>
-              {/* 현재 사용자이고 지각/결석인 경우에만 수정 버튼 표시 */}
-              {member.id_user === selectedUserData?.id_user && 
-               (status?.status_user === '지각' || status?.status_user === '결석') && (
+              
+            </div>
+
+            {/* 수정 버튼 */}
+            {member.id_user === selectedUserData?.id_user && 
+             (status?.status_user === '지각' || status?.status_user === '결석') && (
+              <div className="mt-8 flex justify-center"> {/* mt-6에서 mt-8로 변경 */}
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
@@ -348,15 +380,12 @@ const MemberCard = ({
                     setReasonMessage(memberStatus[officeId]?.dates[date]?.members[member.id_user]?.message_user || '');
                     setShowReasonModal(true);
                   }}
-                  className="px-3 py-1 text-sm bg-[#FFFF00] text-black border-1 border-black rounded-lg"
+                  className="px-4 py-2 bg-[#FFFF00] text-black border border-black rounded-lg font-medium hover:bg-[#FFFF00]/90"
                 >
-                  수정
+                  수정하기
                 </button>
-              )}
-            </div>
-            <p className="text-gray-600 text-base break-words whitespace-pre-line">
-              {memberStatus[officeId]?.dates[date]?.members[member.id_user]?.message_user}
-            </p>
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -405,37 +434,83 @@ const MemberCard = ({
       {showReasonModal && (
         <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-[9999]">
           <div 
-            className="bg-white rounded-2xl p-6 w-[300px] max-w-[90vw]"
+            className="bg-white rounded-2xl p-8 w-[320px] max-w-[90vw] relative"
             onClick={e => e.stopPropagation()}
           >
-            <h3 className="text-lg font-bold mb-4 text-gray-800">
-              {status.status_user === '지각' ? '지각 사유서' : '결석 사유서'} 작성
-            </h3>
-            <textarea
-              value={reasonMessage}
-              onChange={(e) => setReasonMessage(e.target.value)}
-              placeholder={`${status.status_user === '지각' ? '지각' : '결석'} 사유를 입력해주세요.`}
-              className="w-full border rounded-xl px-4 py-3 text-base text-gray-800"
-              rows={3}
-              maxLength={100}
-            />
-            <p className="text-sm text-gray-500 mt-2">
-              최대 100자까지 입력 가능합니다. ({reasonMessage.length}/100)
+            {/* 닫기 버튼 추가 */}
+            <button
+              onClick={() => {
+                setShowReasonModal(false);
+                setReasonMessage('');
+              }}
+              className="absolute right-4 top-4 w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+
+            {/* 제목 영역 */}
+            <div className="text-center mb-8"> {/* mb-6에서 mb-8로 변경 */}
+              <h2 className="text-2xl font-bold text-gray-800">
+                {status.status_user === '지각' ? '지각 사유서' : '결석 사유서'}
+              </h2>
+              <p className="text-sm text-gray-500 mt-2"> {/* mt-1에서 mt-2로 변경 */}
+                {date}
+              </p>
+            </div>
+
+            {/* 입력 영역 - 공책 스타일 */}
+            <div className="bg-[#fff9e5] rounded-lg p-4 relative border border-gray-300 shadow-inner">
+              {/* 공책 라인 효과 */}
+              <div className="absolute left-0 top-0 bottom-0 w-[1px] bg-[#ff9b9b] ml-[20px]"></div>
+              <textarea
+                value={reasonMessage}
+                onChange={(e) => setReasonMessage(e.target.value)}
+                placeholder={`${status.status_user === '지각' ? '지각' : '결석'} 사유를 입력해주세요.`}
+                className="w-full bg-transparent border-none focus:outline-none text-gray-700 text-base pl-[30px] leading-[28px] min-h-[120px] resize-none"
+                style={{
+                  backgroundImage: 'repeating-linear-gradient(transparent, transparent 27px, #ddd 28px)',
+                  paddingTop: '4px'
+                }}
+                rows={4}
+                maxLength={100}
+              />
+            </div>
+
+            {/* 작성자 영역 */}
+            <div className="mt-6 flex justify-end items-center gap-3"> {/* mt-4에서 mt-6으로 변경 */}
+              <div className="w-[50px] h-[50px] rounded-lg overflow-hidden border-1 border-gray-400">
+                <ProfileCharacter
+                  profileStyle={memberInfo?.profilestyle_user}
+                  size={48}
+                />
+              </div>
+              <span className="text-gray-800 font-medium">
+                {memberInfo?.name_user || '사용자'}
+              </span>
+            </div>
+
+            {/* 글자수 카운트 */}
+            <p className="text-sm text-gray-500 mt-6 text-right"> {/* mt-4에서 mt-6으로 변경 */}
+              {reasonMessage.length}/100
             </p>
-            <div className="flex gap-2 mt-4">
+
+            {/* 버튼 영역 */}
+            <div className="flex gap-3 mt-8"> {/* mt-6에서 mt-8로 변경 */}
               <button
                 onClick={() => {
                   setShowReasonModal(false);
                   setReasonMessage('');
                 }}
-                className="flex-1 btn btn-outline text-gray-800"
+                className="flex-1 py-2 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50"
               >
                 취소
               </button>
               <button
                 onClick={handleReasonSubmit}
                 disabled={!reasonMessage.trim()}
-                className="flex-1 btn bg-[#FFFF00] hover:bg-[#FFFF00] text-black border-1 border-black shadow-none"
+                className="flex-1 py-2 bg-[#FFFF00] text-black border border-black rounded-lg font-medium hover:bg-[#FFFF00]/90 disabled:bg-gray-100 disabled:text-gray-400 disabled:border-gray-200"
               >
                 제출
               </button>
@@ -1756,13 +1831,19 @@ export default function Home() {
                       </div>
                     </div>
                     {(() => {
-                      const today = new Date().toISOString().split('T')[0];
-                      const currentUserStatus = memberStatus[selectedSubscription?.id_coffice]
-                        ?.dates[today]
+                      const today = new Date();
+                      today.setHours(0, 0, 0, 0);
+                      const selectedDateObj = new Date(selectedDate);
+                      selectedDateObj.setHours(0, 0, 0, 0);
+                      const isToday = today.getTime() === selectedDateObj.getTime();
+
+                      // 오늘 날짜이고 현재 사용자가 일등인 경우에만 버튼 표시
+                      const userStatus = memberStatus[selectedSubscription?.id_coffice]
+                        ?.dates[selectedDate]
                         ?.members[selectedUserData?.id_user]
                         ?.status_user;
-                      
-                      return selectedDate === today && currentUserStatus === '일등' && (
+
+                      return isToday && userStatus === '일등' && (
                         <button 
                           onClick={() => setShowMessageModal(true)}
                           className="ml-2 px-2 py-0.5 text-black text-xs rounded-lg bg-[#FFFF00] border-1 border-black"
