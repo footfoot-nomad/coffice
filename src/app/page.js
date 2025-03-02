@@ -679,7 +679,7 @@ const AuthForm = ({ onAuthSuccess }) => {
       {/* 상단 로고 영역 - 전체 높이의 30% */}
       <div className="h-[30vh] flex flex-col items-center justify-center gap-4 mt-[8vh]">  {/* mt-[30px]를 mt-[60px]로 변경 */}
         <img src="/img/togetheroffice.png" alt="Together Office" className="w-[250px]" />
-        <img src="/img/co-office.png" alt="Co Office" className="w-[250px]" />
+        <img src="/img/co-office.png" alt="Co Office" className="w-[250px] mt-2" />
       </div>
 
       {/* 중앙 로그인/회원가입 폼 - 전체 높이의 50% */}
