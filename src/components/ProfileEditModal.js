@@ -286,7 +286,7 @@ export default function ProfileEditModal({ user, onClose, onUpdate }) {
             console.error('onClose is not a function:', onClose);
           }
         }}
-        className="btn btn-circle btn-ghost absolute right-4 top-4 text-2xl z-[100] text-black"
+        className="btn btn-circle btn-ghost absolute right-4 top-4 text-2xl z-100 text-black"
       >
         ✕
       </button>
@@ -301,7 +301,7 @@ export default function ProfileEditModal({ user, onClose, onUpdate }) {
             className="absolute top-[-180px] w-32 h-64 z-10" 
           />
           {/* 명찰이미지 */}
-          <div className="absolute top-[30px] w-[310px] h-[500px] bg-white rounded-2xl 
+          <div className="absolute top-[30px] w-[310px] min-h-[500px] bg-white rounded-2xl 
             border-2 border-black 
             shadow-[0_2px_8px_rgba(0,0,0,0.1)]
             z-20"
@@ -311,7 +311,7 @@ export default function ProfileEditModal({ user, onClose, onUpdate }) {
               <div className="rounded-xl overflow-hidden border-2 border-black w-[160px] aspect-square ">
                 <ProfileCharacter
                   profileStyle={user?.profilestyle_user}
-                  size={162}
+                  size={156}
                   className="profile-modal"
                   onClick={handleCharacterClick}
                 />
@@ -351,8 +351,8 @@ export default function ProfileEditModal({ user, onClose, onUpdate }) {
           </div>
         </div>
 
-        {/* 로그아웃 버튼을 카드 아래로 이동 */}
-        <div className="mt-[300px] px-4">
+        {/* 로그아웃 버튼 위치 수정 */}
+        <div className="mt-[300px] px-4 pb-8">
           <button
             type="button"
             onClick={handleLogout}
@@ -366,7 +366,7 @@ export default function ProfileEditModal({ user, onClose, onUpdate }) {
 
       {/* 이름 수정 확인 모달 추가 */}
       {isConfirmModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-[100]">
           <div className="bg-white rounded-2xl p-6 w-[300px]">
             <h3 className="text-lg font-bold mb-4">이름을 수정하시겠습니까?</h3>
             <div className="flex gap-2">
@@ -391,19 +391,24 @@ export default function ProfileEditModal({ user, onClose, onUpdate }) {
 
       {/* 기존 이름 수정 모달 */}
       {isNameModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[100]">
           <div className="bg-white rounded-2xl p-6 w-[300px]">
             <h3 className="text-lg font-bold mb-4">이름 수정</h3>
             <form onSubmit={handleNameSubmit}>
-              <input
-                type="text"
-                value={newName}
-                onChange={(e) => setNewName(e.target.value)}
-                className="w-full border rounded-xl px-4 py-3 text-base mb-4"
-                maxLength={10}
-                required
-              />
-              <div className="flex gap-2">
+              <div className="space-y-2">
+                <input
+                  type="text"
+                  value={newName}
+                  onChange={(e) => setNewName(e.target.value)}
+                  className="w-full border rounded-xl px-4 py-3 text-base"
+                  maxLength={6}
+                  required
+                />
+                <p className="text-sm text-gray-500">
+                  최대 6자까지 입력 가능합니다. ({newName.length}/6)
+                </p>
+              </div>
+              <div className="flex gap-2 mt-4">
                 <button
                   type="button"
                   onClick={() => setIsNameModalOpen(false)}
@@ -426,14 +431,14 @@ export default function ProfileEditModal({ user, onClose, onUpdate }) {
       {/* 오피스 정보 모달 수정 */}
       {isOfficeModalOpen && selectedOffice && (
         <div 
-          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[200]"
+          className="fixed inset-0 bg-black/80 flex items-center justify-center z-[60]"
           onClick={(e) => {
             if (e.target === e.currentTarget) {
               setIsOfficeModalOpen(false);
             }
           }}
         >
-          <div className="bg-white rounded-2xl p-6 w-[320px] max-w-[90%] max-h-[90vh] overflow-y-auto">
+          <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 w-[320px] max-w-[90%] max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-xl font-bold text-black">{selectedOffice.name_office}</h3>
               <button 
@@ -445,15 +450,15 @@ export default function ProfileEditModal({ user, onClose, onUpdate }) {
             </div>
             <div className="space-y-4">
               <div>
-                <label className="text-sm text-black block mb-1">주소</label>
+                <label className="text-sm text-black block mb-1 font-bold">주소</label>
                 <p className="text-base text-black">{selectedOffice.address_office}</p>
               </div>
               <div>
-                <label className="text-sm text-black block mb-1">전화번호</label>
+                <label className="text-sm text-black block mb-1 font-bold">전화번호</label>
                 <p className="text-base text-black">{selectedOffice.tel_office}</p>
               </div>
               <div>
-                <label className="text-sm text-black block mb-1">운영시간</label>
+                <label className="text-sm text-black block mb-1 font-bold">운영시간</label>
                 <div className="space-y-1 text-sm text-black">
                   <p>월요일: {selectedOffice.operation_office[0] ? 
                     `${selectedOffice.operation_office[0][0]} ~ ${selectedOffice.operation_office[0][1]}` : 
@@ -485,7 +490,7 @@ export default function ProfileEditModal({ user, onClose, onUpdate }) {
 
       {/* 캐릭터 편집 모달 수정 */}
       {isCharacterModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[200]">
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-[100]">
           <div className="bg-white rounded-2xl p-6 w-[90%] max-w-[430px] max-h-[90vh] overflow-hidden border-2 border-gray-200 shadow-xl">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-xl font-bold text-black">캐릭터 편집</h3>
@@ -508,7 +513,7 @@ export default function ProfileEditModal({ user, onClose, onUpdate }) {
                     characterInfo.faceColor,
                     characterInfo.backgroundColor
                   ]}
-                  size={162}
+                  size={160}
                   className="character-edit"
                 />
               </div>

@@ -239,7 +239,7 @@ const MemberCard = React.memo(({
       {showTooltip && ((status?.message_user && !isEditing) || isEditing) && (
         <div 
           ref={tooltipRef}
-          className="fixed z-[9999] transition-opacity duration-200"
+          className="fixed z-9999 transition-opacity duration-200"
           style={{
             left: cardRef.current ? `${cardRef.current.getBoundingClientRect().left + (cardRef.current.offsetWidth / 2)}px` : '0',
             top: cardRef.current ? `${cardRef.current.getBoundingClientRect().top - 10}px` : '0',
@@ -259,7 +259,7 @@ const MemberCard = React.memo(({
                     updateMessage();
                   }
                 }}
-                className="w-full px-2 py-1 text-black rounded"
+                className="w-full px-2 py-1 text-black rounded-sm"
                 maxLength={20}
                 placeholder="새 메시지"
                 autoFocus
@@ -280,14 +280,14 @@ const MemberCard = React.memo(({
         {/* 출석 순서 뱃지 */}
         {(status?.status_user === '출석' || status?.status_user === '일등' || status?.status_user === '지각') && (
           <div className="absolute bottom-[-10px] left-1/2 transform -translate-x-1/2 z-10">
-            <div className="w-[20px] h-[20px] rounded-full bg-[#FFFF00] border border-black flex items-center justify-center shadow-sm">
+            <div className="w-[20px] h-[20px] rounded-full bg-[#FFFF00] border border-black flex items-center justify-center shadow-xs">
               <span className="text-[12px] font-bold text-black">
                 {getAttendanceOrder(memberStatus, date, officeId, member.id_user)}
               </span>
             </div>
           </div>
         )}
-        <div ref={cardRef} className="flex-shrink-0 flex flex-col items-center w-[100px] sm:w-[120px] md:w-[140px] border-2 border-black rounded-lg shadow-sm bg-white cursor-pointer overflow-hidden">
+        <div ref={cardRef} className="shrink-0 flex flex-col items-center w-[100px] sm:w-[120px] md:w-[140px] border-2 border-black rounded-lg shadow-xs bg-white cursor-pointer overflow-hidden">
           {/* 출석 뱃지 */}
           {status?.status_user && (
             <div className="absolute right-1 top-1 z-10">
@@ -1372,7 +1372,7 @@ export default function Home() {
                       onClick={() => !isOffDay && setSelectedDate(dateInfo.date)}
                       disabled={isOffDay}
                       className={`
-                        flex-shrink flex-grow min-w-[45px] max-w-[60px] h-[32px] 
+                        shrink grow min-w-[45px] max-w-[60px] h-[32px] 
                         flex items-center justify-center 
                         rounded-full text-[13px] border border-black
                         ${isOffDay
@@ -1434,7 +1434,7 @@ export default function Home() {
                           
                     <button 
                       onClick={() => setShowMessageModal(true)}
-                      className="ml-2 px-3 py-1 bg-black text-white text-sm rounded-lg hover:bg-gray-800 transition-colors relative z-[9999]"
+                      className="ml-2 px-3 py-1 bg-black text-white text-sm rounded-lg hover:bg-gray-800 transition-colors relative z-9999"
                     >
                       수정
                     </button>

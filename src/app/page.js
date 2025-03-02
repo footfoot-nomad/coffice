@@ -46,6 +46,17 @@ const Timer = ({ selectedSubscription, officeInfo }) => {
   useEffect(() => {
     if (!selectedSubscription || !officeInfo) return;
 
+    // 선택된 날짜가 오늘인지 확인
+    const today = new Date();
+    const selectedDate = new Date(selectedSubscription.dates[0].date);
+    const isToday = today.toDateString() === selectedDate.toDateString();
+
+    // 오늘이 아니면 타이머를 실행하지 않음
+    if (!isToday) {
+      setTimeLeft(null);
+      return;
+    }
+
     const dayMapping = {
       '월': 'mon_operation_office',
       '화': 'tue_operation_office',
@@ -116,17 +127,18 @@ const Timer = ({ selectedSubscription, officeInfo }) => {
   const time = formatTime(timeLeft || 0);
 
   return (
-    <div className="flex flex-col items-center">
-      <div className="text-base font-semibold text-gray-600 mb-3">
+    <div className="flex flex-col items-start">
+      <div className="text-[20px] font-semibold text-gray-800 mb-3 px-4">
         남은 시간
       </div>
-      <div className="border-2 border-gray-300 bg-white rounded-lg p-3 w-full max-w-[320px]">
+      <div className="border-2 border-gray-300 bg-gray-100 rounded-lg p-3 w-full max-w-[320px] mx-auto">
         <div className="flex justify-center items-center">
           <span className="font-mono text-[25px] text-black">
             {`${time.hours} : ${time.minutes} : ${time.seconds}`}
           </span>
         </div>
       </div>
+      <div className="w-full h-[1px] bg-gray-200 mt-8"></div>
     </div>
   );
 };
@@ -239,7 +251,7 @@ const MemberCard = React.memo(({
       {showTooltip && ((status?.message_user && !isEditing) || isEditing) && (
         <div 
           ref={tooltipRef}
-          className="fixed z-[9999] transition-opacity duration-200"
+          className="fixed z-9999 transition-opacity duration-200"
           style={{
             left: cardRef.current ? `${cardRef.current.getBoundingClientRect().left + (cardRef.current.offsetWidth / 2)}px` : '0',
             top: cardRef.current ? `${cardRef.current.getBoundingClientRect().top - 10}px` : '0',
@@ -259,7 +271,7 @@ const MemberCard = React.memo(({
                     updateMessage();
                   }
                 }}
-                className="w-full px-2 py-1 text-black rounded"
+                className="w-full px-2 py-1 text-black rounded-sm"
                 maxLength={20}
                 placeholder="새 메시지"
                 autoFocus
@@ -279,20 +291,20 @@ const MemberCard = React.memo(({
       <div className="relative">
         {/* 출석 순서 뱃지 */}
         {(status?.status_user === '출석' || status?.status_user === '일등' || status?.status_user === '지각') && (
-          <div className="absolute bottom-[-10px] left-1/2 transform -translate-x-1/2 z-10">
-            <div className="w-[20px] h-[20px] rounded-full bg-[#FFFF00] border border-black flex items-center justify-center shadow-sm">
-              <span className="text-[11px] font-bold text-black">
+          <div className="absolute bottom-[-12px] left-1/2 transform -translate-x-1/2 z-10">
+            <div className="w-[24px] h-[24px] rounded-full bg-[#FFFF00] border border-black flex items-center justify-center shadow-xs">
+              <span className="text-[14px] font-bold text-black">
                 {getAttendanceOrder(memberStatus, date, officeId, member.id_user)}
               </span>
             </div>
           </div>
         )}
-        <div ref={cardRef} className="flex-shrink-0 flex flex-col items-center w-[100px] sm:w-[120px] md:w-[140px] border-2 border-black rounded-lg shadow-sm bg-white cursor-pointer overflow-hidden">
+        <div ref={cardRef} className="shrink-0 flex flex-col items-center w-[100px] sm:w-[120px] md:w-[140px] border-2 border-gray-600 rounded-lg shadow-xs bg-white cursor-pointer overflow-hidden">
           {/* 출석 뱃지 */}
           {status?.status_user && (
             <div className="absolute right-1 top-1 z-10">
-              <div className="badge bg-white shadow-md w-[30px] h-[18px] flex items-center justify-center">
-                <span className="text-[10px] font-medium" style={{ color: getStatusColor(status.status_user) }}>
+              <div className="badge bg-white shadow-md w-[36px] h-[20px] flex items-center justify-center p-0">
+                <span className="text-[11px] font-medium" style={{ color: getStatusColor(status.status_user) }}>
                   {status.status_user}
                 </span>
               </div>
@@ -302,7 +314,7 @@ const MemberCard = React.memo(({
           <div className="w-full">
             <div className={`relative -ml-0 -mt-0 ${
               (!status?.status_user || status?.status_user === '결석') ? 'grayscale' : ''
-            }`}>
+            } ${status?.status_user === '일등' ? 'scale-x-[-1]' : ''}`}>
               <MemoizedProfileCharacter
                 profileStyle={memberInfo?.profilestyle_user}
                 size="100%"
@@ -311,7 +323,7 @@ const MemberCard = React.memo(({
             </div>
           </div>
 
-          <div className="w-full px-2 pb-2 flex flex-col gap-[2px]">
+          <div className="w-full px-2 pt-[5px] pb-[13px] flex flex-col gap-0">
             <span className="text-[15px] font-semibold text-center text-gray-800 truncate w-full block">
               {memberInfo?.name_user || '사용자'}
             </span>
@@ -345,6 +357,22 @@ const MemberCard = React.memo(({
   );
 });
 
+// Haversine 거리 계산 함수 추가 (상단에 추가)
+const calculateDistance = (lat1, lon1, lat2, lon2) => {
+  const R = 6371e3; // 지구의 반지름 (미터)
+  const φ1 = lat1 * Math.PI/180;
+  const φ2 = lat2 * Math.PI/180;
+  const Δφ = (lat2-lat1) * Math.PI/180;
+  const Δλ = (lon2-lon1) * Math.PI/180;
+
+  const a = Math.sin(Δφ/2) * Math.sin(Δφ/2) +
+          Math.cos(φ1) * Math.cos(φ2) *
+          Math.sin(Δλ/2) * Math.sin(Δλ/2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+
+  return R * c; // 미터 단위 거리
+};
+
 export default function Home() {
   const [showPopup, setShowPopup] = useState(true)
   const [selectedUserData, setSelectedUserData] = useState(null)
@@ -368,6 +396,7 @@ export default function Home() {
   const [isMessageSelected, setIsMessageSelected] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false)
   const [memberInfo, setMemberInfo] = useState([])
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -965,12 +994,59 @@ export default function Home() {
     console.log('이벤트 로그:', eventLogData);
   }
 
-  // 출석 이벤트 생성 함수
+  // createAttendanceEvent 함수 수정
   const createAttendanceEvent = async () => {
     if (!selectedSubscription || !selectedDate) return;
 
+    setIsLoading(true); // 로딩 시작
+
     try {
-      // 해당 날짜의 모든 출석 이벤트를 조회
+      // 현재 GPS 위치 가져오기
+      const getCurrentPosition = () => {
+        return new Promise((resolve, reject) => {
+          navigator.geolocation.getCurrentPosition(resolve, reject);
+        });
+      };
+
+      // 3초 대기를 위한 Promise
+      const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+      // GPS 위치 가져오기와 3초 대기를 동시에 실행
+      const [position] = await Promise.all([
+        getCurrentPosition(),
+        wait(3000)
+      ]);
+
+      const currentLat = position.coords.latitude;
+      const currentLon = position.coords.longitude;
+
+      // 오피스 GPS 정보 (이미 배열 형태)
+      const [officeLat, officeLon] = officeInfo[selectedSubscription.id_office].gps_office;
+
+      // 거리 계산
+      const distance = calculateDistance(currentLat, currentLon, officeLat, officeLon);
+
+      if (distance > 50) {
+        setIsLoading(false);
+        const warningMessage = document.createElement('div');
+        warningMessage.className = 'alert alert-warning w-[288px] fixed top-[calc(70vh+50px)] left-1/2 -translate-x-1/2 z-50';
+        warningMessage.innerHTML = `
+          <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+          <span>코피스 근처로 이동해 주세요.</span>
+        `;
+        
+        document.body.appendChild(warningMessage);
+
+        setTimeout(() => {
+          warningMessage.remove();
+        }, 3000);
+
+        return;
+      }
+
+      // 기존 출석 로직
       const { data: existingEvents, error: fetchError } = await supabase
         .from('event_log')
         .select('*')
@@ -980,10 +1056,8 @@ export default function Home() {
 
       if (fetchError) throw fetchError;
 
-      // 출석 타입 결정 (첫 출석자면 '일등', 아니면 '출석')
       const attendanceType = existingEvents?.length === 0 ? '일등' : '출석';
 
-      // 새 출석 이벤트 생성
       const { data, error } = await supabase
         .from('event_log')
         .insert([
@@ -1002,30 +1076,75 @@ export default function Home() {
 
     } catch (error) {
       console.error('출석 이벤트 생성 실패:', error);
+      const warningMessage = document.createElement('div');
+      warningMessage.className = 'alert alert-warning w-[288px] fixed top-[calc(70vh+100px)] left-1/2 -translate-x-1/2 z-50';
+      warningMessage.innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+        </svg>
+        <span>위치 정보를 확인할 수 없습니다.</span>
+      `;
+      
+      document.body.appendChild(warningMessage);
+
+      setTimeout(() => {
+        warningMessage.remove();
+      }, 3000);
+    } finally {
+      setIsLoading(false); // 로딩 종료
     }
   };
 
   // 메시지 업데이트 함수 수정
   const updateCofficeMessage = async () => {
-    if (!selectedSubscription || newMessage.length > 20) return;
+    if (!selectedSubscription) return;
 
     try {
+      // 로딩 상태 추가 (필요한 경우)
+      setIsLoading(true);
+
       const { data, error } = await supabase
         .from('coffices')
         .update({ message_coffice: newMessage })
         .eq('id_coffice', selectedSubscription.id_coffice)
-        .select(); // 업데이트된 데이터를 반환받기 위해 select 추가
+        .select();
 
       if (error) throw error;
 
-      // 즉시 상태 업데이트
+      // 성공적으로 업데이트된 경우
       setCofficeMessage(newMessage);
       setShowMessageModal(false);
       setNewMessage('');
       
-      console.log('메시지 업데이트 성공:', data);
+      // 성공 메시지 표시 (선택사항)
+      const successMessage = document.createElement('div');
+      successMessage.className = 'alert alert-success w-[288px] fixed top-[calc(70vh+50px)] left-1/2 -translate-x-1/2 z-50';
+      successMessage.innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <span>메시지가 업데이트되었습니다.</span>
+      `;
+      document.body.appendChild(successMessage);
+      setTimeout(() => successMessage.remove(), 3000);
+
     } catch (error) {
       console.error('메시지 업데이트 실패:', error);
+      
+      // 에러 메시지 표시
+      const errorMessage = document.createElement('div');
+      errorMessage.className = 'alert alert-error w-[288px] fixed top-[calc(70vh+50px)] left-1/2 -translate-x-1/2 z-50';
+      errorMessage.innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <span>메시지 업데이트에 실패했습니다.</span>
+      `;
+      document.body.appendChild(errorMessage);
+      setTimeout(() => errorMessage.remove(), 3000);
+
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -1179,7 +1298,7 @@ export default function Home() {
             <div className="relative" ref={dropdownRef}>
               <button
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                className="flex items-center min-w-[250px] w-auto h-[50px] px-5 py-3 border rounded-lg bg-white"
+                className={`flex items-center min-w-[250px] w-auto h-[50px] px-5 py-3 border-1 border-gray-400 rounded-lg ${isDropdownOpen ? 'bg-gray-100' : 'bg-gray-100'}`}
               >
                 <div className="flex-1">
                   <div className="flex items-center gap-2 text-black whitespace-nowrap">
@@ -1197,7 +1316,7 @@ export default function Home() {
               </button>
 
               {isDropdownOpen && (
-                <div className="absolute top-full left-0 mt-1 z-50">
+                <div className="absolute top-full left-0 mt-1 z-50 bg-white rounded-lg shadow-lg border">
                   {subscriptionDetails
                     .filter(subscription => 
                       selectedSubscription ? 
@@ -1211,7 +1330,7 @@ export default function Home() {
                           setSelectedSubscription(subscription)
                           setIsDropdownOpen(false)
                         }}
-                        className="flex items-center min-w-[260px] w-auto h-[50px] px-5 py-3 mt-1 border rounded-lg bg-white"
+                        className="flex items-center min-w-[260px] w-auto h-[50px] px-5 py-3 hover:bg-gray-50"
                       >
                         <div className="flex-1">
                           <div className="flex items-center gap-2 text-black whitespace-nowrap">
@@ -1236,10 +1355,10 @@ export default function Home() {
               className="flex flex-col items-center cursor-pointer"
               onClick={() => setShowProfileModal(true)}
             >
-              <div className="rounded-lg overflow-hidden border-2 border-gray w-[50px] aspect-square">
+              <div className="rounded-lg overflow-hidden border-1 border-gray-400 w-[50px] aspect-square">
                 <ProfileCharacter
                   profileStyle={selectedUserData?.profilestyle_user}
-                  size={47}
+                  size={48}
                   className="profile-main"
                 />
               </div>
@@ -1268,7 +1387,8 @@ export default function Home() {
         {!showPopup && selectedSubscription && (
           <>
             <div className="mt-2 mb-2">
-              <div className="flex gap-2 overflow-x-auto scrollbar-hide px-4 py-5 justify-center">
+      
+       <div className="flex gap-2 overflow-x-auto scrollbar-hide px-4 py-4 justify-center">
                 {selectedSubscription.dates.map((dateInfo) => {
                   const isPast = compareDates(dateInfo.date, userData.timestamp) < 0;
                   const isSelected = dateInfo.date === selectedDate;
@@ -1293,9 +1413,9 @@ export default function Home() {
                       onClick={() => !isOffDay && setSelectedDate(dateInfo.date)}
                       disabled={isOffDay}
                       className={`
-                        flex-shrink flex-grow min-w-[45px] max-w-[60px] h-[32px] 
+                        shrink grow min-w-[45px] max-w-[60px] h-[32px] 
                         flex items-center justify-center 
-                        rounded-full text-[13px] border border-black
+                        rounded-full text-[13px] border-1 border-gray-350
                         ${isOffDay
                           ? 'bg-red-100 text-red-500 cursor-not-allowed'
                           : isSelected
@@ -1323,70 +1443,89 @@ export default function Home() {
 
             <div className="flex flex-col items-start mt-8 mb-4 px-4">
               <div className="flex items-center gap-0 mb-1">
-                <div className="text-[14px] font-semibold text-gray-500">우리반 메세지</div>
-                <div className="relative group">
-                  <div className="w-5 h-5 flex items-center justify-center cursor-pointer">
+                <div className="text-[19px] font-semibold text-gray-500">우리반 메세지</div>
+                <div className="relative">
+                  <div 
+                    className="w-5 h-5 flex items-center justify-center cursor-pointer"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      const tooltip = e.currentTarget.nextElementSibling;
+                      const allTooltips = document.querySelectorAll('.message-tooltip');
+                      
+                      allTooltips.forEach(t => {
+                        if (t !== tooltip) t.classList.add('hidden');
+                      });
+                      
+                      tooltip.classList.toggle('hidden');
+                      
+                      setTimeout(() => {
+                        tooltip.classList.add('hidden');
+                      }, 5000);
+                    }}
+                  >
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                   </div>
-                  <div className="absolute left-[-12px] bottom-full mb-2 hidden group-hover:block w-[180px] bg-gray-800/80 text-white text-sm rounded-lg p-3 z-50">
+                  <div className="message-tooltip hidden absolute left-[-12px] bottom-full mb-2 w-[180px] bg-gray-800/80 text-white text-sm rounded-lg p-3 z-50">
                     <div className="text-gray-200">일등으로 출석한 사람이</div>
                     <div className="text-gray-200">메세지를 수정할 수 있어요.</div>
                     <div className="absolute left-4 top-full w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[6px] border-t-gray-800/80"></div>
                   </div>
                 </div>
-              </div>
-              <div className="w-full flex justify-between items-center">
-                <div className="text-gray-600 text-base font-medium">
-                  {cofficeMessage}
-                </div>
-                
                 {(() => {
                   const today = new Date().toISOString().split('T')[0];
-                  
-                  const userStatus = memberStatus[selectedSubscription?.id_coffice]
-                    ?.dates[selectedDate]
+                  const currentUserStatus = memberStatus[selectedSubscription?.id_coffice]
+                    ?.dates[today]
                     ?.members[selectedUserData?.id_user]
                     ?.status_user;
                   
-                  return selectedDate === today && 
-                         userStatus === '일등' && (
-                          
+                  return selectedDate === today && currentUserStatus === '일등' && (
                     <button 
                       onClick={() => setShowMessageModal(true)}
-                      className="ml-2 px-3 py-1 bg-black text-white text-sm rounded-lg hover:bg-gray-800 transition-colors relative z-[9999]"
+                      className="ml-2 px-2 py-0.5 bg-gray-500 text-white text-xs rounded-lg hover:bg-gray-700 transition-colors"
                     >
                       수정
                     </button>
                   );
-                  
                 })()}
+              </div>
+              <div className="w-full">
+                <div className="text-gray-600 text-lg font-medium break-words whitespace-pre-line" style={{ maxHeight: '2.5em', lineHeight: '1.25em', overflow: 'hidden' }}>
+                  {cofficeMessage}
+                </div>
               </div>
             </div>
 
             {showMessageModal && (
-              <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                <div className="bg-white rounded-lg p-6 w-[90%] max-w-sm">
-                  <h3 className="text-lg font-medium mb-4">메시지 수정</h3>
-                  <input
-                    type="text"
-                    maxLength={20}
-                    value={newMessage}
-                    onChange={(e) => setNewMessage(e.target.value)}
-                    placeholder="메시지를 입력하세요 (20자 이내)"
-                    className="w-full border rounded-lg px-3 py-2 mb-4"
-                  />
-                  <div className="flex justify-end gap-2">
+              <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-[100]">
+                <div className="bg-white rounded-2xl p-6 w-[300px]">
+                  <h3 className="text-lg font-bold mb-4">메시지 수정</h3>
+                  <div className="space-y-2">
+                    <textarea
+                      maxLength={40}
+                      value={newMessage}
+                      onChange={(e) => setNewMessage(e.target.value)}
+                      placeholder="메시지를 입력하세요"
+                      className="w-full border rounded-xl px-4 py-3 text-base"
+                      rows={2}
+                      required
+                    />
+                    <p className="text-sm text-gray-500">
+                      최대 40자까지 입력 가능합니다. ({newMessage.length}/40)
+                    </p>
+                  </div>
+                  <div className="flex gap-2 mt-4">
                     <button
+                      type="button"
                       onClick={() => setShowMessageModal(false)}
-                      className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg"
+                      className="flex-1 btn btn-outline"
                     >
                       취소
                     </button>
                     <button
                       onClick={updateCofficeMessage}
-                      className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+                      className="flex-1 btn btn-primary"
                     >
                       저장
                     </button>
@@ -1396,7 +1535,8 @@ export default function Home() {
             )}
 
             <div className="mt-8">
-              <div className="text-[20px] font-semibold text-gray-900 ml-4">
+              <div className="text-[20px] font-semibold text-gray-800 ml-4">
+              
                 출석 현황
               </div>
               <div className="flex gap-2 overflow-x-auto scrollbar-hide px-4 pt-3 pb-4">
@@ -1448,19 +1588,24 @@ export default function Home() {
 
               <button
                 onClick={createAttendanceEvent}
-                disabled={isButtonDisabled}
+                disabled={isButtonDisabled || isLoading}
                 className={`
                   btn w-[288px] h-[48px] mx-auto mt-4 block
                   border border-[#c8c8c8] normal-case rounded-lg
-                  ${isButtonDisabled 
+                  relative
+                  ${isButtonDisabled || isLoading
                     ? 'bg-[#DEDEDE] text-black hover:bg-[#DEDEDE]' 
                     : 'bg-[#FFFF00] text-black hover:bg-[#FFFF00]'
                   }
                 `}
               >
-                <span className="text-[16px] font-semibold">
-                  {attendanceMessage}
-                </span>
+                <div className="flex items-center justify-center gap-2">
+                  {isLoading ? (
+                    <span className="loading loading-spinner loading-sm"></span>
+                  ) : (
+                    <span className="text-[16px] font-semibold">{attendanceMessage}</span>
+                  )}
+                </div>
               </button>
             </div>
           </>

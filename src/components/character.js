@@ -14,7 +14,7 @@ export function defaultCharacterDrawing({
   
   // SVG 문자열 생성 시 고유 ID 적용
   const svgString = `
-    <svg xmlns="http://www.w3.org/2000/svg" id="characterSvg_${uniqueId}" viewBox="0 100 2800 2800" width="${imageSize}" height="${imageSize}">
+    <svg xmlns="http://www.w3.org/2000/svg" id="characterSvg_${uniqueId}" viewBox="10 30 2800 2800" width="${imageSize}" height="${imageSize}">
       <defs>
         <style>
           .head_${uniqueId} { fill: ${faceColor}; }

@@ -8,7 +8,7 @@ export default function UserSelectionPopup({ userInfoList, onSelectUser }) {
             <button
               key={`user-${user.email}-${user.time}`}
               onClick={() => onSelectUser(user)}
-              className="w-full p-3 text-left border rounded hover:bg-gray-100 transition-colors"
+              className="w-full p-3 text-left border rounded-sm hover:bg-gray-100 transition-colors"
             >
               <div className="font-medium">{user.email}</div>
               <div className="text-sm text-gray-600">
