@@ -351,7 +351,7 @@ export default function ProfileEditModal({ user, onClose, onUpdate }) {
             <div className="mt-8 px-4">
               <div className="space-y-3">
                 {/* 사용자 이름 표시 */}
-                <div className="text-center mt-[-25px] mb-[5px] relative">
+                <div className="text-center mt-[-30px] mb-[12px] relative">
                   <div className="inline-block relative">
                     <span className="text-3xl font-bold tracking-wide py-4 text-black block">
                       {name}
