@@ -534,7 +534,7 @@ const MemberCard = ({
             </div>
           </div>
         )}
-        <div ref={cardRef} className="shrink-0 flex flex-col items-center w-[100px] sm:w-[120px] md:w-[140px] border-2 border-gray-600 rounded-lg shadow-xs bg-white overflow-hidden">
+        <div ref={cardRef} className="shrink-0 flex flex-col items-center w-[25vw] min-w-[90px] max-w-[120px] border-2 border-gray-600 rounded-lg shadow-xs bg-white overflow-hidden">
           {/* 출석 뱃지 */}
           {status?.status_user && (
             <div className="absolute right-1 top-1 z-10">
@@ -1758,8 +1758,8 @@ export default function Home() {
 
             {selectedSubscription && (
               <>
-                <div className="h-[6vh] flex items-center">
-                  <div className="flex gap-2 overflow-x-auto scrollbar-hide px-4 py-2 justify-center w-full">
+                <div className="h-[6vh] flex items-center mt-[max(10px,1vh)]">
+                  <div className="flex gap-[3vw] overflow-x-auto scrollbar-hide px-4 py-2 justify-center w-full">
                     {selectedSubscription.dates.map((dateInfo) => {
                       const isPast = compareDates(dateInfo.date, userData.timestamp) < 0;
                       const isSelected = dateInfo.date === selectedDate;
@@ -1815,7 +1815,7 @@ export default function Home() {
                 </div>
 
                 <div className="flex flex-col h-[10vh] justify-center px-4 mt-[8vh] pb-[3vh]">
-                  <div className="flex items-center gap-0 mt-[5vh] mb-2">
+                  <div className="flex items-center gap-0 mt-[max(20px,5vh)] mb-2">
                     <div className="text-[19px] font-semibold text-gray-800 ">1등의 메시지</div>
                     <div className="relative">
                       <div 
@@ -1878,11 +1878,11 @@ export default function Home() {
                   </div>
                 </div>
 
-                <div className="h-[37vh] flex flex-col mt-[5vh]">
+                <div className="h-[42vh] flex flex-col mt-[3vh]">
                   <div className="text-[20px] font-semibold text-gray-800 ml-4 mb-3">
                     출석 현황
                   </div>
-                  <div className="flex-1 overflow-y-auto mb-4">
+                  <div className="flex-1 overflow-y-auto mb-4  min-h-[180px]">
                     <div className="flex gap-2 overflow-x-auto scrollbar-hide px-4 pb-4">
                       {selectedSubscription.dates
                         .find(date => date.date === selectedDate)
