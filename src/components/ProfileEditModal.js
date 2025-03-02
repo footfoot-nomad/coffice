@@ -456,9 +456,9 @@ export default function ProfileEditModal({ user, onClose, onUpdate }) {
           <button
             type="button"
             onClick={handleLogout}
-            className="w-full btn bg-[#FFFF00] hover:bg-[#FFFF00] text-black border-1 border-black rounded-lg py-3"
+            className="btn w-[288px] h-[48px] mx-auto block border border-[#c8c8c8] normal-case rounded-lg bg-[#FFFF00] hover:bg-[#FFFF00] text-black"
           >
-            로그아웃
+            <span className="text-[16px] font-semibold">로그아웃</span>
           </button>
         </div>
       </div>
