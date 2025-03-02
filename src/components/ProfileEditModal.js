@@ -274,7 +274,7 @@ export default function ProfileEditModal({ user, onClose, onUpdate }) {
 //   }
 
   return (
-    <div className="fixed inset-0 bg-white z-50 animate-slide-down overflow-y-auto">
+    <div className="fixed inset-0 z-50 animate-slide-down overflow-y-auto" style={{ backgroundColor: '#FFFFC9' }}>
       {/* 메인 닫기 버튼 */}
       <button 
         type="button"
@@ -292,27 +292,57 @@ export default function ProfileEditModal({ user, onClose, onUpdate }) {
       </button>
       
       <div className="max-w-[430px] mx-auto pb-8 flex flex-col min-h-screen">
-        <div className="flex flex-col items-center pt-8">
-          {/* 목걸이 */}
-          <img 
-            src="/img/necklace.png" 
-            alt="necklace" 
-            className="w-32 h-64 z-10" 
-          />
+        <div className="flex flex-col items-center pt-8 mt-[-180px]">
+          {/* 목걸이 SVG로 교체 */}
+          <svg width="538" height="778" viewBox="0 0 538 778" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-50 h-64 z-10">
+            <g filter="url(#filter0_d_1401_3593)">
+              <path fillRule="evenodd" clipRule="evenodd" d="M369.684 544.66C414.222 425.409 442.968 256.686 442.968 67.4973C389 48.1651 422 48.165 374 33.4972C330 38.9972 350.427 75.2622 326.5 48.1651C312 40.9973 283.928 50.1655 279.5 48.1651C275.072 50.1655 242.774 41.9339 228 58.6651C204.073 85.7622 187.44 -26.585 165 33.4972C110 58.665 118.5 33.4973 95.032 67.4973C95.032 256.686 123.778 425.409 168.316 544.66C190.756 604.742 215.801 648.414 239.728 675.511C254.502 692.242 264.572 698.164 269 700.165C273.428 698.164 283.498 692.242 298.272 675.511C322.199 648.414 347.244 604.742 369.684 544.66ZM269 768.997C413.699 768.997 531 454.925 531 67.4973C374 21.9963 424.199 21.9962 279.5 21.9962C134.801 21.9962 168.316 -36.5 7 67.4973C7 454.925 124.301 768.997 269 768.997Z" fill="#7EBFFB"/>
+            </g>
+            <defs>
+              <filter id="filter0_d_1401_3593" x="0" y="0.601562" width="538" height="777.395" filterUnits="userSpaceOnUse" colorInterpolationFilters="sRGB">
+                <feFlood floodOpacity="0" result="BackgroundImageFix"/>
+                <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+                <feOffset dy="2"/>
+                <feGaussianBlur stdDeviation="3.5"/>
+                <feComposite in2="hardAlpha" operator="out"/>
+                <feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.15 0"/>
+                <feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_1401_3593"/>
+                <feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_1401_3593" result="shape"/>
+              </filter>
+            </defs>
+          </svg>
           {/* 명찰이미지 */}
           <div className="w-[310px] bg-white rounded-2xl 
             border-2 border-black 
             shadow-[0_2px_8px_rgba(0,0,0,0.1)]
-            z-20 mt-[-180px] py-10"
+            z-20 mt-[-50px] py-10 min-h-[450px]"
           >
             {/* 캐릭터 이미지를 ProfileCharacter 컴포넌트로 교체 */}
             <div className="flex justify-center items-center">
-              <div className="rounded-xl overflow-hidden border-2 border-black w-[160px] aspect-square ">
+              <div className="rounded-2xl overflow-hidden border-2 border-black w-[160px] aspect-square relative">
+                <div 
+                  className="absolute top-2 right-2 z-30 bg-white/80 rounded-full p-1.5 cursor-pointer hover:bg-white"
+                  onClick={handleCharacterClick}
+                >
+                  <svg 
+                    xmlns="http://www.w3.org/2000/svg" 
+                    fill="none" 
+                    viewBox="0 0 24 24" 
+                    strokeWidth={1.5} 
+                    stroke="currentColor" 
+                    className="w-5 h-5"
+                  >
+                    <path 
+                      strokeLinecap="round" 
+                      strokeLinejoin="round" 
+                      d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" 
+                    />
+                  </svg>
+                </div>
                 <ProfileCharacter
                   profileStyle={user?.profilestyle_user}
                   size={156}
                   className="profile-modal"
-                  onClick={handleCharacterClick}
                 />
               </div>
             </div>
@@ -321,24 +351,79 @@ export default function ProfileEditModal({ user, onClose, onUpdate }) {
             <div className="mt-8 px-4">
               <div className="space-y-3">
                 {/* 사용자 이름 표시 */}
-                <div className="text-center mt-[-20px]">
-                  <span 
-                    className="text-3xl font-bold tracking-wide block py-4 cursor-pointer hover:text-gray-600 text-black"
-                    onClick={handleNameClick}
-                  >
-                    {name}
-                  </span>
+                <div className="text-center mt-[-25px] mb-[5px] relative">
+                  <div className="inline-block relative">
+                    <span className="text-3xl font-bold tracking-wide py-4 text-black block">
+                      {name}
+                    </span>
+                    
+                    <button
+                      onClick={handleNameClick}
+                      className="absolute top-1/2 -translate-y-1/2 left-full ml-1 text-gray-500 hover:text-gray-700 p-1"
+                    >
+                      <svg 
+                        xmlns="http://www.w3.org/2000/svg" 
+                        fill="none" 
+                        viewBox="0 0 24 24" 
+                        strokeWidth={1.5} 
+                        stroke="currentColor" 
+                        className="w-5 h-5"
+                      >
+                        <path 
+                          strokeLinecap="round" 
+                          strokeLinejoin="round" 
+                          d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" 
+                        />
+                      </svg>
+                    </button>
+                  </div>
                 </div>
                 {subscriptionData.map((sub, index) => (
-                  <div key={index} className="text-center">
-                    
-                    <span 
-                      className="block text-lg font-bold cursor-pointer hover:text-blue-600 text-black"
+                  <div key={index} className="text-center bg-gray-50 rounded-lg p-3 hover:bg-gray-100 transition-colors">
+                    <div 
+                      className="cursor-pointer space-y-1.5"
                       onClick={() => handleOfficeClick(sub)}
                     >
-                      {sub.name_office}
-                    </span>
-                    <span className="text-sm text-black">{sub.days.join(', ')}</span>
+                      <span className="block text-lg font-bold text-black flex items-center justify-center mb-0.5">
+                        <svg 
+                          xmlns="http://www.w3.org/2000/svg" 
+                          fill="none" 
+                          viewBox="0 0 24 24" 
+                          strokeWidth={1.5} 
+                          stroke="currentColor" 
+                          className="w-5 h-5 mr-1"
+                        >
+                          <path 
+                            strokeLinecap="round" 
+                            strokeLinejoin="round" 
+                            d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" 
+                          />
+                          <path 
+                            strokeLinecap="round" 
+                            strokeLinejoin="round" 
+                            d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" 
+                          />
+                        </svg>
+                        {sub.name_office}
+                      </span>
+                      <span className="text-sm text-black flex items-center justify-center">
+                        <svg 
+                          xmlns="http://www.w3.org/2000/svg" 
+                          fill="none" 
+                          viewBox="0 0 24 24" 
+                          strokeWidth={1.5} 
+                          stroke="currentColor" 
+                          className="w-4 h-4 mr-1"
+                        >
+                          <path 
+                            strokeLinecap="round" 
+                            strokeLinejoin="round" 
+                            d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" 
+                          />
+                        </svg>
+                        {sub.days.join(', ')}
+                      </span>
+                    </div>
                   </div>
                 ))}
                 {subscriptionData.length === 0 && (
@@ -503,7 +588,7 @@ export default function ProfileEditModal({ user, onClose, onUpdate }) {
 
             {/* 캐릭터 미리보기 - 고정 */}
             <div className="flex justify-center mb-6">
-              <div className="inline-block rounded-xl overflow-hidden border-2 border-black">
+              <div className="inline-block rounded-2xl overflow-hidden border-2 border-black">
                 <ProfileCharacter 
                   profileStyle={[
                     characterInfo.hairNo,
