@@ -39,3 +39,17 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# 환경 변수 파일
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# 기타 일반적인 제외 파일들
+node_modules/
+.next/
+build/
+dist/
+.DS_Store
