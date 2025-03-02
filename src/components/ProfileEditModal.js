@@ -291,23 +291,22 @@ export default function ProfileEditModal({ user, onClose, onUpdate }) {
         ✕
       </button>
       
-      <div className="max-w-[430px] mx-auto pb-8">
-        
-        <div className="relative flex justify-center h-[250px]">
+      <div className="max-w-[430px] mx-auto pb-8 flex flex-col min-h-screen">
+        <div className="flex flex-col items-center pt-8">
           {/* 목걸이 */}
           <img 
             src="/img/necklace.png" 
             alt="necklace" 
-            className="absolute top-[-180px] w-32 h-64 z-10" 
+            className="w-32 h-64 z-10" 
           />
           {/* 명찰이미지 */}
-          <div className="absolute top-[30px] w-[310px] min-h-[500px] bg-white rounded-2xl 
+          <div className="w-[310px] bg-white rounded-2xl 
             border-2 border-black 
             shadow-[0_2px_8px_rgba(0,0,0,0.1)]
-            z-20"
+            z-20 mt-[-180px] py-10"
           >
             {/* 캐릭터 이미지를 ProfileCharacter 컴포넌트로 교체 */}
-            <div className="flex justify-center items-center mt-12">
+            <div className="flex justify-center items-center">
               <div className="rounded-xl overflow-hidden border-2 border-black w-[160px] aspect-square ">
                 <ProfileCharacter
                   profileStyle={user?.profilestyle_user}
@@ -351,8 +350,8 @@ export default function ProfileEditModal({ user, onClose, onUpdate }) {
           </div>
         </div>
 
-        {/* 로그아웃 버튼 위치 수정 */}
-        <div className="mt-[300px] px-4 pb-8">
+        {/* 로그아웃 버튼 - flex-shrink-0으로 고정 크기 유지 */}
+        <div className="px-4 mt-8 flex-shrink-0">
           <button
             type="button"
             onClick={handleLogout}
