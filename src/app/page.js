@@ -39,20 +39,34 @@ const getDatesForMonth = (yearMonth, dayOfWeek) => {
 };
 
 // Timer 컴포넌트 수정
-const Timer = ({ selectedSubscription, officeInfo }) => {
+const Timer = ({ selectedSubscription, officeInfo, selectedDate }) => {
   const [timeLeft, setTimeLeft] = useState(null);
   const [timerStatus, setTimerStatus] = useState('waiting');
+  const [isExactToday, setIsExactToday] = useState(false);  // isExactToday 상태 추가
 
   useEffect(() => {
     if (!selectedSubscription || !officeInfo) return;
 
-    // 선택된 날짜가 오늘인지 확인
+    // 오늘 날짜
     const today = new Date();
-    const selectedDate = new Date(selectedSubscription.dates[0].date);
-    const isToday = today.toDateString() === selectedDate.toDateString();
+    today.setHours(0, 0, 0, 0);  // 시간 초기화
 
-    // 오늘이 아니면 타이머를 실행하지 않음
-    if (!isToday) {
+    // 선택된 날짜 - selectedDate prop 사용
+    const selectedDateObj = new Date(selectedDate); // selectedSubscription.dates[0].date 대신 selectedDate 사용
+    selectedDateObj.setHours(0, 0, 0, 0);  // 시간 초기화
+
+    // 정확히 오늘 날짜인지 확인
+    const isExactToday = today.getTime() === selectedDateObj.getTime();
+    setIsExactToday(isExactToday);
+    
+    // isExactToday 값을 콘솔에 출력
+    console.log('isExactToday:', isExactToday, {
+      today: today.toISOString(),
+      selectedDate: selectedDateObj.toISOString()
+    });
+
+    // 정확히 오늘 날짜가 아니면 타이머를 실행하지 않음
+    if (!isExactToday) {
       setTimeLeft(null);
       return;
     }
@@ -111,9 +125,11 @@ const Timer = ({ selectedSubscription, officeInfo }) => {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [selectedSubscription, officeInfo]);
+  }, [selectedSubscription, officeInfo, selectedDate]);
 
   const formatTime = (ms) => {
+    if (!isExactToday) return { hours: '--', minutes: '--', seconds: '--' };  // isExactToday가 false일 때 처리
+    
     const hours = Math.floor(ms / (1000 * 60 * 60));
     const minutes = Math.floor((ms % (1000 * 60 * 60)) / (1000 * 60));
     const seconds = Math.floor((ms % (1000 * 60)) / 1000);
@@ -1438,7 +1454,7 @@ export default function Home() {
             <Timer 
               selectedSubscription={selectedSubscription} 
               officeInfo={officeInfo}
-              
+              selectedDate={selectedDate}
             />
 
             <div className="flex flex-col items-start mt-8 mb-4 px-4">
