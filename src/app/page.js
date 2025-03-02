@@ -319,7 +319,7 @@ const MemberCard = ({
           onClick={() => setShowMessageModal(false)}
         >
           <div 
-            className="bg-white rounded-2xl pt-12 pb-12 p-8 w-[320px] max-w-[90vw] relative"
+            className="bg-white rounded-2xl pt-11 pb-11 p-8 w-[320px] max-w-[90vw] relative"
             onClick={e => e.stopPropagation()}
           >
             {/* 닫기 버튼 추가 */}
@@ -434,7 +434,7 @@ const MemberCard = ({
       {showReasonModal && (
         <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-[9999]">
           <div 
-            className="bg-white rounded-2xl p-8 w-[320px] max-w-[90vw] relative"
+            className="bg-white rounded-2xl pt-11 pb-11 p-8 w-[320px] max-w-[90vw] relative"
             onClick={e => e.stopPropagation()}
           >
             {/* 닫기 버튼 추가 */}
