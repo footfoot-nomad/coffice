@@ -120,18 +120,18 @@ const Timer = ({ selectedSubscription, officeInfo, selectedDate }) => {
   const time = formatTime(timeLeft || 0);
 
   return (
-    <div className="flex flex-col items-start h-[14vh] mt-[7vh] mb-[5vh]">
-      <div className="text-[20px] font-semibold text-gray-800 mb-3 px-4">
+    <div className="flex flex-col items-start h-[22vh] mb-[3vh] mt-[10vh]">
+      <div className="text-[20px] font-semibold text-gray-800 mt-[3vh] mb-3 px-4">
         남은 시간
       </div>
-      <div className="border-2 border-gray-300 bg-gray-100 rounded-lg p-3 w-full max-w-[320px] mx-auto h-[15vh] mb-[3vh]">
-        <div className="flex justify-center items-center">
-          <span className="font-mono text-[25px] text-black">
+      <div className="border-2 border-gray-300 bg-gray-100 rounded-lg p-3 w-full max-w-[320px] mx-auto h-[12vh]">
+        <div className="flex justify-center items-center h-full">
+          <span className="font-mono text-[40px] text-black">
             {`${time.hours} : ${time.minutes} : ${time.seconds}`}
           </span>
         </div>
       </div>
-      <div className="w-full h-[1px] bg-gray-200 mt-2"></div>
+      <div className="w-full h-[1px] bg-gray-200 mt-[3vh]"></div>
     </div>
   );
 };
@@ -1675,7 +1675,7 @@ export default function Home() {
         ) : (
           <>
             {subscriptionDetails.length > 0 && userData && (
-              <div className="flex justify-between items-start w-full max-w-[1200px] mx-auto px-4 h-[9vh]">
+              <div className="flex justify-between items-start w-full max-w-[1200px] mx-auto px-4 h-[8vh]">
                 <div className="relative" ref={dropdownRef}>
                   <button
                     onClick={() => setIsDropdownOpen(!isDropdownOpen)}
@@ -1758,8 +1758,8 @@ export default function Home() {
 
             {selectedSubscription && (
               <>
-                <div className="h-[5vh] flex items-center mb-[10px]">
-                  <div className="flex gap-2 overflow-x-auto scrollbar-hide px-4 py-4 justify-center w-full">
+                <div className="h-[6vh] flex items-center">
+                  <div className="flex gap-2 overflow-x-auto scrollbar-hide px-4 py-2 justify-center w-full">
                     {selectedSubscription.dates.map((dateInfo) => {
                       const isPast = compareDates(dateInfo.date, userData.timestamp) < 0;
                       const isSelected = dateInfo.date === selectedDate;
@@ -1806,7 +1806,7 @@ export default function Home() {
                   </div>
                 </div>
 
-                <div className="h-[20vh] flex flex-col justify-center">
+                <div className="h-[18vh] flex flex-col justify-center">
                   <Timer 
                     selectedSubscription={selectedSubscription} 
                     officeInfo={officeInfo}
@@ -1814,9 +1814,9 @@ export default function Home() {
                   />
                 </div>
 
-                <div className="flex flex-col h-[15vh] justify-center px-4 mb-[2vh] mt-[-2vh]">
-                  <div className="flex items-center gap-0 mb-1">
-                    <div className="text-[19px] font-semibold text-gray-800">1등의 메시지</div>
+                <div className="flex flex-col h-[10vh] justify-center px-4 mt-[8vh] pb-[3vh]">
+                  <div className="flex items-center gap-0 mt-[5vh] mb-2">
+                    <div className="text-[19px] font-semibold text-gray-800 ">1등의 메시지</div>
                     <div className="relative">
                       <div 
                         className="w- h-5 flex items-center justify-center cursor-pointer"
@@ -1843,6 +1843,7 @@ export default function Home() {
                       <div className="message-tooltip hidden absolute left-[-12px] bottom-full mb-2 w-[180px] bg-gray-800/80 text-white text-sm rounded-lg p-3 z-50">
                         <div className="text-gray-200">일등으로 출석한 사람이</div>
                         <div className="text-gray-200">메시지를 수정할 수 있어요.</div>
+
                         <div className="absolute left-4 top-full w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[6px] border-t-gray-800/80"></div>
                       </div>
                     </div>
@@ -1869,19 +1870,19 @@ export default function Home() {
                       );
                     })()}
                   </div>
-                  <div className="w-full">
-                    <div className="text-gray-600 text-lg font-medium break-words whitespace-pre-line" 
+                  <div className="w-full ">
+                    <div className="text-gray-600 text-lg font-medium break-words whitespace-pre-line mb-[3vh]" 
                          style={{ maxHeight: '2.5em', lineHeight: '1.25em', overflow: 'hidden' }}>
                       {cofficeMessage}
                     </div>
                   </div>
                 </div>
 
-                <div className="h-[50vh] flex flex-col">
-                  <div className="text-[20px] font-semibold text-gray-800 ml-4 mb-2">
+                <div className="h-[37vh] flex flex-col mt-[5vh]">
+                  <div className="text-[20px] font-semibold text-gray-800 ml-4 mb-3">
                     출석 현황
                   </div>
-                  <div className="flex-1 overflow-y-auto">
+                  <div className="flex-1 overflow-y-auto mb-4">
                     <div className="flex gap-2 overflow-x-auto scrollbar-hide px-4 pb-4">
                       {selectedSubscription.dates
                         .find(date => date.date === selectedDate)
@@ -1929,8 +1930,9 @@ export default function Home() {
                         })}
                     </div>
                   </div>
-
-                  <div className="py-4 flex justify-center mb-[6vh]">
+                  
+                  {/* 출석 버튼 영역 */}
+                  <div className="py-4 flex justify-center mb-[2vh]">
                     <button
                       onClick={createAttendanceEvent}
                       disabled={isButtonDisabled || isLoading}
