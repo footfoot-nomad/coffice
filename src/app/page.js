@@ -1,8 +1,6 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import UserSelectionPopup from '@/components/UserSelectionPopup'
-import { userInfoList } from '@/data/userInfoList'
 import { supabase } from '@/lib/supabase'
 import ProfileEditModal from '@/components/ProfileEditModal'
 import ProfileCharacter from '@/components/ProfileCharacter'
@@ -12,27 +10,26 @@ import React from 'react'
 const getDatesForMonth = (yearMonth, dayOfWeek) => {
   const year = 2000 + parseInt(yearMonth.substring(0, 2));
   const month = parseInt(yearMonth.substring(2, 4)) - 1; // 0-based month
-  const dates = [];
   
-  // 요일 매핑
-  const dayMapping = {
-    '월': 1, '화': 2, '수': 3, '목': 4, '금': 5, '토': 6, '일': 0
-  };
-  
+  // 요일 매핑 간소화
+  const dayMapping = { '월': 1, '화': 2, '수': 3, '목': 4, '금': 5, '토': 6, '일': 0 };
   const targetDay = dayMapping[dayOfWeek];
-  const date = new Date(year, month, 1);
   
-  // 해당 월의 마지막 날짜
-  const lastDay = new Date(year, month + 1, 0).getDate();
+  // 해당 월의 첫째 날과 마지막 날 구하기
+  const firstDate = new Date(year, month, 1);
+  const lastDate = new Date(year, month + 1, 0);
   
-  // 해당 월의 모든 날짜를 확인
-  for (let i = 1; i <= lastDay; i++) {
-    date.setDate(i);
-    if (date.getDay() === targetDay) {
-      // YYYY-MM-DD 형식으로 변환
-      const formattedDate = `${year}-${String(month + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
-      dates.push(formattedDate);
-    }
+  // 첫 번째 해당 요일 찾기
+  let currentDate = new Date(firstDate);
+  currentDate.setDate(1 + (targetDay - firstDate.getDay() + 7) % 7);
+  
+  const dates = [];
+  // 월의 마지막 날까지 해당 요일의 날짜들 수집
+  while (currentDate <= lastDate) {
+    dates.push(
+      `${year}-${String(month + 1).padStart(2, '0')}-${String(currentDate.getDate()).padStart(2, '0')}`
+    );
+    currentDate.setDate(currentDate.getDate() + 7);
   }
   
   return dates;
@@ -84,19 +81,24 @@ const Timer = ({ selectedSubscription, officeInfo, selectedDate }) => {
     const calculateTimes = () => {
       const now = new Date();
       const operationHours = officeInfo[selectedSubscription.id_office]?.[dayMapping[selectedSubscription.day_coffice]];
+      
+      console.log('selectedSubscription', selectedSubscription);
+      console.log('officeInfo', officeInfo);
       console.log('operationHours', operationHours);
+      console.log('dayMapping', dayMapping);
+      
 
       if (!operationHours) return null;
 
-      // 영업 시작 시간
-      const [startHour, startMinute] = operationHours[0].split(':').map(Number);
+      // 영업 시작 시간 (HH:MM:SS 형식)
+      const [startHour, startMinute, startSecond] = operationHours[0].split(':').map(Number);
       const startTime = new Date();
-      startTime.setHours(startHour, startMinute, 0);
+      startTime.setHours(startHour, startMinute, startSecond);
 
-      // 출석 마감 시간
+      // 출석 마감 시간 (HH:MM 형식)
       const [attendHour, attendMinute] = selectedSubscription.attendtime_coffice.split(':').map(Number);
       const attendTime = new Date();
-      attendTime.setHours(attendHour, attendMinute, 0);
+      attendTime.setHours(attendHour, attendMinute, 0); // 초는 0으로 설정
       
 
       // 총 카운트다운 시간 (영업 시작 ~ 출석 마감)
@@ -546,8 +548,123 @@ const calculateDistance = (lat1, lon1, lat2, lon2) => {
   return R * c; // 미터 단위 거리
 };
 
+// AuthForm 컴포넌트 추가
+const AuthForm = ({ onAuthSuccess }) => {
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [name, setName] = useState('')
+  const [isSignUp, setIsSignUp] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [message, setMessage] = useState('')
+
+  const handleAuth = async (e) => {
+    e.preventDefault()
+    setLoading(true)
+    setMessage('')
+
+    try {
+      if (isSignUp) {
+        // 회원가입 - 이메일 제한 없이
+        const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+          email,
+          password,
+        })
+
+        if (signUpError) throw signUpError
+
+        // 사용자 정보 저장
+        const { error: profileError } = await supabase
+          .from('users')
+          .insert([
+            {
+              uuid_user: signUpData.user.id.toString(),
+              email_user: email,
+              name_user: name
+            }
+          ])
+
+        if (profileError) throw profileError
+        setMessage('가입 확인 이메일을 확인해주세요.')
+
+      } else {
+        // 로그인 로직은 그대로 유지
+        const { error: signInError } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        })
+
+        if (signInError) throw signInError
+        onAuthSuccess()
+      }
+    } catch (error) {
+      setMessage(error.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-[100]">
+      <div className="bg-white rounded-2xl p-6 w-[320px]">
+        <h2 className="text-2xl font-bold mb-6 text-center">
+          {isSignUp ? '회원가입' : '로그인'}
+        </h2>
+        <form onSubmit={handleAuth} className="space-y-4">
+          {isSignUp && (
+            <input
+              type="text"
+              placeholder="이름"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="w-full px-4 py-2 border rounded-lg"
+              required
+            />
+          )}
+          <input
+            type="email"
+            placeholder="이메일"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="w-full px-4 py-2 border rounded-lg"
+            required
+          />
+          <input
+            type="password"
+            placeholder="비밀번호"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="w-full px-4 py-2 border rounded-lg"
+            required
+          />
+          {message && (
+            <p className="text-sm text-center text-red-500">{message}</p>
+          )}
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full btn bg-[#FFFF00] hover:bg-[#FFFF00] text-black border-1 border-black"
+          >
+            {loading ? (
+              <span className="loading loading-spinner loading-sm"></span>
+            ) : (
+              isSignUp ? '가입하기' : '로그인'
+            )}
+          </button>
+        </form>
+        <button
+          onClick={() => setIsSignUp(!isSignUp)}
+          className="w-full mt-4 text-sm text-gray-600 hover:underline"
+        >
+          {isSignUp ? '이미 계정이 있으신가요? 로그인' : '계정이 없으신가요? 회원가입'}
+        </button>
+      </div>
+    </div>
+  )
+}
+
 export default function Home() {
-  const [showPopup, setShowPopup] = useState(true)
+  // showPopup을 showAuth로 변경
+  const [showAuth, setShowAuth] = useState(true)
   const [selectedUserData, setSelectedUserData] = useState(null)
   const [userData, setUserData] = useState(null)
   const [subscriptionDetails, setSubscriptionDetails] = useState([])
@@ -886,7 +1003,8 @@ export default function Home() {
           '일': 'sun_operation_office'
         };
 
-        const operationHours = officeInfo[selectedSubscription.id_office]?.[dayMapping[selectedSubscription.day_coffice]];
+        const officeId = selectedSubscription?.coffices?.offices?.id_office;
+        const operationHours = officeId ? officeInfo[officeId]?.[dayMapping[selectedSubscription.day_coffice]] : null;
         
         if (!operationHours) return;
 
@@ -910,262 +1028,168 @@ export default function Home() {
     return () => clearInterval(interval);
   }, [selectedSubscription, officeInfo, selectedDate, memberStatus, selectedUserData]);
 
-  const handleSelectUser = async (user) => {
-    console.log('선택된 사용자 데이터:', user);
-    
-    // 현재 시간으로 Date 객체 생성
-    const date = new Date();
-    
-    // 요일을 한글로 변환
-    const dayNames = ['일', '월', '화', '수', '목', '금', '토'];
-    const koreanDay = dayNames[date.getDay()];
-    
-    // YYMM 형식으로 날짜 변환
-    const year = date.getFullYear().toString().slice(-2);
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const yymmDate = year + month;
-    
-    const userData = {
-      email: user.email,
-      location: {
-        latitude: user.lat,
-        longitude: user.lon
-      },
-      timestamp: date.toISOString(), // 현재 시간으로 설정
-      day: koreanDay,
-      date: yymmDate
-    }
-    
-    setUserData(userData)
-    
-    console.log('변환된 userData:', userData);
-    
-    const { data: userInfo, error } = await supabase
-      .from('users')
-      .select('id_user, name_user, email_user, contact_user, profilestyle_user')
-      .eq('email_user', userData.email)
-      .single();
+  // handleSelectUser 대신 handleAuthSuccess 사용
+  const handleAuthSuccess = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) throw new Error('사용자 정보를 찾을 수 없습니다.')
 
-    // 에러 처리
-    if (error) {
-      console.error('사용자 정보 조회 실패:', error);
-      return;
-    }
+      // 먼저 사용자 정보 조회
+      const { data: existingUser, error: fetchError } = await supabase
+        .from('users')
+        .select('*')
+        .eq('uuid_user', user.id)
+        .single()
 
-    // 사용자 정보 콘솔 출력
-    console.log('사용자 정보:', {
-      '사용자 ID': userInfo.id_user,
-      '이름': userInfo.name_user,
-      '이메일': userInfo.email_user,
-      '연락처': userInfo.contact_user,
-      '프로필 스타일': userInfo.profilestyle_user
-    });
+      // 사용자 정보가 없으면 새로 생성
+      if (fetchError && fetchError.code === 'PGRST116') {
+        const { data: newUser, error: insertError } = await supabase
+          .from('users')
+          .insert([
+            {
+              uuid_user: user.id,
+              email_user: user.email,
+              name_user: user.email.split('@')[0],
+              profilestyle_user: '{0,0,1,0,5}'
+            }
+          ])
+          .select()
+          .single()
 
-    // 변수명 변경: preSubscriptionInfo -> loadedSubscriptionInfo
-    const { data: loadedSubscriptionInfo, error: subscriptionError } = await supabase
-      .from('subscriptions')
-      .select(`
-        id_subscription,
-        id_coffice,
-        coffices (
-          id_office,
-          groupname_coffice,
-          day_coffice,
-          month_coffice,
-          attendtime_coffice,
-          offdate_coffice,
-          offices (
-            name_office
-          )
-        )
-      `)
-      .eq('activation', true)
-      .eq('id_user', userInfo.id_user);
+        if (insertError) throw insertError
+        setSelectedUserData(newUser)
+        setUserData({ ...newUser, timestamp: new Date().toISOString() })
+      } else {
+        if (fetchError) throw fetchError
+        setSelectedUserData(existingUser)
+        setUserData({ ...existingUser, timestamp: new Date().toISOString() })
+      }
 
-    if (subscriptionError) {
-      console.error('구독 정보 조회 실패:', subscriptionError);
-      return;
-    }
-
-    // 변수명 변경: formattedSubscriptions -> subscriptionInfo
-    const preSubscriptionInfo = loadedSubscriptionInfo.map(subscription => ({
-      id_coffice: subscription.id_coffice,
-      id_office: subscription.coffices.id_office,
-      groupname_coffice: subscription.coffices.groupname_coffice,
-      day_coffice: subscription.coffices.day_coffice,
-      attendtime_coffice: subscription.coffices.attendtime_coffice,
-      month_coffice: subscription.coffices.month_coffice,
-      offdate_coffice: subscription.coffices.offdate_coffice,
-      name_office: subscription.coffices.offices.name_office
-    }));
-
-    // 임시 subscriptionInfo 생성 (dates 포함)
-    const tempSubscriptionInfo = preSubscriptionInfo.map(sub => ({
-      ...sub,
-      dates: getDatesForMonth(sub.month_coffice, sub.day_coffice)
-    }));
-
-    // 각 코피스별 사용자 정보 조회
-    const processedSubscriptionInfo = await Promise.all(tempSubscriptionInfo.map(async (sub) => {
-      const { data: membersList, error: membersError } = await supabase
+      // 구독 정보 가져오기 (수정된 쿼리)
+      const { data: subscriptions, error: subscriptionError } = await supabase
         .from('subscriptions')
-        .select('id_user')
-        .eq('id_coffice', sub.id_coffice)
-        .eq('activation', true);
-
-      if (membersError) {
-        console.error('멤버 목록 조회 실패:', membersError);
-        return sub;
-      }
-
-      // dates 배열의 각 날짜에 멤버 목록 추가 (status와 message 포함)
-      const datesWithMembers = sub.dates.map(date => ({
-        date: date,
-        members: membersList.map(member => ({
-          id_user: member.id_user,
-          status: null,
-          message: null
-        }))
-      }));
-
-      return {
-        ...sub,
-        dates: datesWithMembers
-      };
-    }));
-
-    // subscriptionInfo state 설정
-    setSubscriptionInfo(processedSubscriptionInfo);
-
-    console.log('멤버 정보가 추가된 구독 정보:', processedSubscriptionInfo);
-
-    // 활성화된 구독의 모든 사용자 정보 조회
-    const { data: memberData, error: memberError } = await supabase
-      .from('subscriptions')
-      .select(`
-        users (
+        .select(`
+          id_subscription,
           id_user,
-          name_user,
-          email_user,
-          contact_user,
-          profilestyle_user
-        )
-      `)
-      .in('id_coffice', processedSubscriptionInfo.map(sub => sub.id_coffice))
-      .eq('activation', true);
+          id_coffice,
+          activation,
+          coffices!inner (
+            id_coffice,
+            id_office,
+            month_coffice,
+            day_coffice,
+            groupname_coffice,
+            offdate_coffice,
+            attendtime_coffice,
+            message_coffice,
+            offices!inner (
+              id_office,
+              name_office,
+              mon_operation_office,
+              tue_operation_office,
+              wed_operation_office,
+              thu_operation_office,
+              fri_operation_office,
+              sat_operation_office,
+              sun_operation_office,
+              gps_office
+            )
+          )
+        `)
+        .eq('id_user', existingUser?.id_user || newUser?.id_user)
+        .eq('activation', true)
 
-    if (memberError) {
-      console.error('멤버 정보 조회 실패:', memberError);
-      return;
-    }
+      if (subscriptionError) throw subscriptionError
 
-    // 멤버 정보 객체 생성
-    const membersInfo = memberData.reduce((acc, item) => {
-      acc[item.users.id_user] = {
-        id_user: item.users.id_user,
-        name_user: item.users.name_user,
-        email_user: item.users.email_user,
-        contact_user: item.users.contact_user,
-        profilestyle_user: item.users.profilestyle_user
-      };
-      return acc;
-    }, {});
+      // 구독 정보 가공 - dates 동적 생성
+      const processedSubscriptions = subscriptions.map(sub => {
+        // getDatesForMonth를 사용하여 해당 월의 날짜 배열 생성
+        const dates = getDatesForMonth(sub.coffices.month_coffice, sub.coffices.day_coffice)
+          .map(date => ({
+            date,
+            members: [{
+              id_user: existingUser?.id_user || newUser?.id_user
+            }]
+          }));
 
-    setMembersInfo(membersInfo);
-    console.log('멤버 정보:', membersInfo);
+        return {
+          ...sub,
+          month_coffice: sub.coffices.month_coffice,
+          day_coffice: sub.coffices.day_coffice,
+          groupname_coffice: sub.coffices.groupname_coffice,
+          offdate_coffice: sub.coffices.offdate_coffice,
+          attendtime_coffice: sub.coffices.attendtime_coffice,
+          name_office: sub.coffices.offices.name_office,
+          id_office: sub.coffices.offices.id_office,
+          dates
+        }
+      })
 
-    // subscriptionDetails를 현재 요일 기준으로 가장 가까운 미래 순서로 정렬
-    const currentDay = koreanDay; // 현재 요일
-    const sortedSubscriptions = [...processedSubscriptionInfo].sort((a, b) => {
-      const diffA = getDayDifference(currentDay, a.day_coffice);
-      const diffB = getDayDifference(currentDay, b.day_coffice);
-      
-      // 현재 요일과 같은 경우 우선 순위를 가장 높게
-      if (a.day_coffice === currentDay) return -1;
-      if (b.day_coffice === currentDay) return 1;
-      
-      return diffA - diffB;
-    });
-
-    setSubscriptionDetails(sortedSubscriptions);
-
-    // 정렬된 첫 번째 구독을 선택
-    setSelectedSubscription(sortedSubscriptions[0]);
-    
-    setSelectedUserData(userInfo);
-    setShowPopup(false);
-
-    // 오피스 정보 조회
-    const { data: officeData, error: officeError } = await supabase
-      .from('coffices')
-      .select(`
-        id_coffice,
-        id_office,
-        offices (
-          id_office,
-          name_office,
-          tel_office,
-          address_office,
-          gps_office,
-          mon_operation_office,
-          tue_operation_office,
-          wed_operation_office,
-          thu_operation_office,
-          fri_operation_office,
-          sat_operation_office,
-          sun_operation_office
-        )
-      `)
-      .in('id_coffice', processedSubscriptionInfo.map(sub => sub.id_coffice));
-
-    if (officeError) {
-      console.error('오피스 정보 조회 실패:', officeError);
-      return;
-    }
-
-    // 오피스 정보를 id_office를 키로 하는 객체로 가공하여 중복 제거
-    const processedOfficeInfo = officeData.reduce((acc, coffice) => {
-      const officeDetails = coffice.offices;
-      // 이미 해당 id_office의 정보가 있다면 건너뛰기
-      if (!acc[coffice.id_office]) {
-        acc[coffice.id_office] = {
-          id_office: officeDetails.id_office,
-          name_office: officeDetails.name_office,
-          tel_office: officeDetails.tel_office,
-          address_office: officeDetails.address_office,
-          gps_office: officeDetails.gps_office,
-          mon_operation_office: officeDetails.mon_operation_office,
-          tue_operation_office: officeDetails.tue_operation_office,
-          wed_operation_office: officeDetails.wed_operation_office,
-          thu_operation_office: officeDetails.thu_operation_office,
-          fri_operation_office: officeDetails.fri_operation_office,
-          sat_operation_office: officeDetails.sat_operation_office,
-          sun_operation_office: officeDetails.sun_operation_office
-        };
+      setSubscriptionDetails(processedSubscriptions)
+      if (processedSubscriptions.length > 0) {
+        setSelectedSubscription(processedSubscriptions[0])
       }
-      return acc;
-    }, {});
 
-    setOfficeInfo(processedOfficeInfo);
-    console.log('오피스 정보:', processedOfficeInfo);
+      // 오피스 정보 설정
+      const officesInfo = {}
+      processedSubscriptions.forEach(sub => {
+        officesInfo[sub.coffices.offices.id_office] = {
+          mon_operation_office: sub.coffices.offices.mon_operation_office,
+          tue_operation_office: sub.coffices.offices.tue_operation_office,
+          wed_operation_office: sub.coffices.offices.wed_operation_office,
+          thu_operation_office: sub.coffices.offices.thu_operation_office,
+          fri_operation_office: sub.coffices.offices.fri_operation_office,
+          sat_operation_office: sub.coffices.offices.sat_operation_office,
+          sun_operation_office: sub.coffices.offices.sun_operation_office,
+          gps_office: sub.coffices.offices.gps_office
+        }
+      })
+      setOfficeInfo(officesInfo)
 
-    // 모든 id_coffice 추출
-    const cofficeIds = processedSubscriptionInfo.map(sub => sub.id_coffice);
+      // 멤버 정보 가져오기
+      if (processedSubscriptions.length > 0) {
+        const { data: memberData, error: memberError } = await supabase
+          .from('subscriptions')
+          .select(`
+            users (
+              id_user,
+              name_user,
+              email_user,
+              contact_user,
+              profilestyle_user
+            )
+          `)
+          .eq('id_coffice', processedSubscriptions[0].id_coffice)
+          .eq('activation', true)
 
-    // event_log 데이터 조회
-    const { data: eventLogData, error: eventLogError } = await supabase
-      .from('event_log')
-      .select('*')
-      .in('id_coffice', cofficeIds);
+        if (memberError) throw memberError
 
-    if (eventLogError) {
-      console.error('이벤트 로그 조회 실패:', eventLogError);
-      return;
+        // 멤버 정보 객체 생성
+        const membersInfo = memberData.reduce((acc, item) => {
+          acc[item.users.id_user] = item.users
+          return acc
+        }, {})
+
+        setMembersInfo(membersInfo)
+      }
+
+      setShowAuth(false)
+
+    } catch (error) {
+      console.error('사용자 정보 로드 실패:', error)
     }
-
-    setEventLog(eventLogData);
-    console.log('이벤트 로그:', eventLogData);
   }
+
+  // 자동 로그인 체크
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        handleAuthSuccess()
+      }
+    }
+    checkAuth()
+  }, [])
 
   // createAttendanceEvent 함수 수정
   const createAttendanceEvent = async () => {
@@ -1219,11 +1243,19 @@ export default function Home() {
         return;
       }
 
+      // ID를 정수로 변환
+      const cofficeId = parseInt(selectedSubscription.id_coffice);
+      const userId = parseInt(selectedUserData.id_user);
+
+      if (isNaN(cofficeId) || isNaN(userId)) {
+        throw new Error('유효하지 않은 ID 형식입니다.');
+      }
+
       // 기존 출석 로직
       const { data: existingEvents, error: fetchError } = await supabase
         .from('event_log')
         .select('*')
-        .eq('id_coffice', selectedSubscription.id_coffice)
+        .eq('id_coffice', selectedSubscription.id_coffice.toString()) // toString() 추가
         .eq('date_event', selectedDate)
         .in('type_event', ['출석', '일등']);
 
@@ -1235,8 +1267,8 @@ export default function Home() {
         .from('event_log')
         .insert([
           {
-            id_coffice: selectedSubscription.id_coffice,
-            id_user: selectedUserData.id_user,
+            id_coffice: selectedSubscription.id_coffice.toString(), // toString() 추가
+            id_user: selectedUserData.id_user.toString(), // toString() 추가
             type_event: attendanceType,
             message_event: null,
             date_event: selectedDate,
@@ -1459,328 +1491,317 @@ export default function Home() {
   return (
     <div className="flex justify-center min-h-screen bg-gray-50">
       <main className="w-full max-w-[430px] min-h-screen bg-white p-4 mx-auto font-pretendard">
-        {showPopup && (
-          <UserSelectionPopup 
-            userInfoList={userInfoList} 
-            onSelectUser={handleSelectUser} 
-          />
-        )}
-
-        {!showPopup && subscriptionDetails.length > 0 && userData && (
-          <div className="flex justify-between items-start w-full max-w-[1200px] mx-auto px-4">
-            <div className="relative" ref={dropdownRef}>
-              <button
-                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                className={`flex items-center min-w-[250px] w-auto h-[50px] px-5 py-3 border-1 border-gray-400 rounded-lg ${isDropdownOpen ? 'bg-gray-100' : 'bg-gray-100'}`}
-              >
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 text-black whitespace-nowrap">
-                    <span className="text-[17px] font-bold leading-none flex items-center">
-                      {selectedSubscription?.name_office || subscriptionDetails[0].name_office}
-                    </span>
-                    <span className="text-gray-500 leading-none flex items-center">
-                      {parseInt((selectedSubscription?.month_coffice || subscriptionDetails[0].month_coffice).substring(2, 4))}월
-                    </span>
-                    <span className="text-gray-500 leading-none flex items-center">
-                      {selectedSubscription?.groupname_coffice || subscriptionDetails[0].groupname_coffice}
-                    </span>
-                  </div>
-                </div>
-              </button>
-
-              {isDropdownOpen && (
-                <div className="absolute top-full left-0 mt-1 z-50 bg-white rounded-lg shadow-lg border">
-                  {subscriptionDetails
-                    .filter(subscription => 
-                      selectedSubscription ? 
-                        subscription.id_coffice !== selectedSubscription.id_coffice : 
-                        subscription.id_coffice !== subscriptionDetails[0].id_coffice
-                    )
-                    .map((subscription) => (
-                      <button
-                        key={subscription.id_coffice}
-                        onClick={() => {
-                          setSelectedSubscription(subscription)
-                          setIsDropdownOpen(false)
-                        }}
-                        className="flex items-center min-w-[260px] w-auto h-[50px] px-5 py-3 hover:bg-gray-50"
-                      >
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 text-black whitespace-nowrap">
-                            <span className="text-[17px] font-bold leading-none">
-                              {subscription.name_office}
-                            </span>
-                            <span className="text-gray-500 leading-none">
-                              {parseInt(subscription.month_coffice.substring(2, 4))}월
-                            </span>
-                            <span className="text-gray-500 leading-none">
-                              {subscription.groupname_coffice}
-                            </span>
-                          </div>
-                        </div>
-                      </button>
-                    ))}
-                </div>
-              )}
-            </div>
-
-            <div 
-              className="flex flex-col items-center cursor-pointer"
-              onClick={() => setShowProfileModal(true)}
-            >
-              <div className="rounded-lg overflow-hidden border-1 border-gray-400 w-[50px] aspect-square">
-                <ProfileCharacter
-                  profileStyle={selectedUserData?.profilestyle_user}
-                  size={48}
-                  className="profile-main"
-                />
-              </div>
-            </div>
-          </div>
-        )}
-
-        {showProfileModal && (
-          <ProfileEditModal
-            user={selectedUserData}
-            onClose={handleCloseProfileModal}
-            onUpdate={(updatedUser) => {
-              setSelectedUserData(updatedUser);
-              setMemberInfo(prevInfo => 
-                prevInfo.map(member => 
-                  member.id_user === updatedUser.id_user 
-                    ? { ...member, profilestyle_user: updatedUser.profilestyle_user }
-                    : member
-                )
-              );
-            }}
-            className="text-black"
-          />
-        )}
-
-        {!showPopup && selectedSubscription && (
+        {showAuth ? (
+          <AuthForm onAuthSuccess={handleAuthSuccess} />
+        ) : (
           <>
-            <div className="mt-2 mb-2">
-      
-       <div className="flex gap-2 overflow-x-auto scrollbar-hide px-4 py-4 justify-center">
-                {selectedSubscription.dates.map((dateInfo) => {
-                  const isPast = compareDates(dateInfo.date, userData.timestamp) < 0;
-                  const isSelected = dateInfo.date === selectedDate;
-                  const date = new Date(dateInfo.date);
-                  const month = String(date.getMonth() + 1).padStart(2, '0');
-                  const day = String(date.getDate()).padStart(2, '0');
-                  
-                  let offDates = [];
-                  if (selectedSubscription.offdate_coffice) {
-                    if (Array.isArray(selectedSubscription.offdate_coffice)) {
-                      offDates = selectedSubscription.offdate_coffice;
-                    } else if (typeof selectedSubscription.offdate_coffice === 'string') {
-                      offDates = selectedSubscription.offdate_coffice.split(',').map(d => d.trim());
-                    }
-                  }
-                  
-                  const isOffDay = offDates.includes(dateInfo.date);
-
-                  return (
-                    <button
-                      key={dateInfo.date}
-                      onClick={() => !isOffDay && setSelectedDate(dateInfo.date)}
-                      disabled={isOffDay}
-                      className={`
-                        shrink grow min-w-[45px] max-w-[60px] h-[32px] 
-                        flex items-center justify-center 
-                        rounded-full text-[13px] border-1 border-gray-350
-                        ${isOffDay
-                          ? 'bg-red-100 text-red-500 cursor-not-allowed'
-                          : isSelected
-                            ? 'bg-[#FFFF00] text-black border-black'
-                            : isPast
-                              ? 'bg-gray-100 text-gray-500 border-gray-200'
-                              : 'bg-white text-black hover:bg-gray-50'
-                        }
-                      `}
-                    >
-                      <span className="font-medium text-[13px] whitespace-nowrap">
-                        {`${month}/${day}`}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            <Timer 
-              selectedSubscription={selectedSubscription} 
-              officeInfo={officeInfo}
-              selectedDate={selectedDate}
-            />
-
-            <div className="flex flex-col items-start mt-8 mb-4 px-4">
-              <div className="flex items-center gap-0 mb-1">
-                <div className="text-[19px] font-semibold text-gray-800">1등의 메시지</div>
-                <div className="relative">
-                  <div 
-                    className="w- h-5 flex items-center justify-center cursor-pointer"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      const tooltip = e.currentTarget.nextElementSibling;
-                      const allTooltips = document.querySelectorAll('.message-tooltip');
-                      
-                      allTooltips.forEach(t => {
-                        if (t !== tooltip) t.classList.add('hidden');
-                      });
-                      
-                      tooltip.classList.toggle('hidden');
-                      
-                      setTimeout(() => {
-                        tooltip.classList.add('hidden');
-                      }, 5000);
-                    }}
+            {subscriptionDetails.length > 0 && userData && (
+              <div className="flex justify-between items-start w-full max-w-[1200px] mx-auto px-4">
+                <div className="relative" ref={dropdownRef}>
+                  <button
+                    onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                    className={`flex items-center min-w-[250px] w-auto h-[50px] px-5 py-3 border-1 border-gray-400 rounded-lg ${isDropdownOpen ? 'bg-gray-100' : 'bg-gray-100'}`}
                   >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                  </div>
-                  <div className="message-tooltip hidden absolute left-[-12px] bottom-full mb-2 w-[180px] bg-gray-800/80 text-white text-sm rounded-lg p-3 z-50">
-                    <div className="text-gray-200">일등으로 출석한 사람이</div>
-                    <div className="text-gray-200">메시지를 수정할 수 있어요.</div>
-                    <div className="absolute left-4 top-full w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[6px] border-t-gray-800/80"></div>
-                  </div>
-                </div>
-                {(() => {
-                  const today = new Date().toISOString().split('T')[0];
-                  const currentUserStatus = memberStatus[selectedSubscription?.id_coffice]
-                    ?.dates[today]
-                    ?.members[selectedUserData?.id_user]
-                    ?.status_user;
-                  
-                  return selectedDate === today && currentUserStatus === '일등' && (
-                    <button 
-                      onClick={() => setShowMessageModal(true)}
-                      className="ml-2 px-2 py-0.5 text-black text-xs rounded-lg bg-[#FFFF00] border-1 border-black"
-                    >
-                      작성
-                    </button>
-                  );
-                })()}
-              </div>
-              <div className="w-full">
-                <div className="text-gray-600 text-lg font-medium break-words whitespace-pre-line" style={{ maxHeight: '2.5em', lineHeight: '1.25em', overflow: 'hidden' }}>
-                  {cofficeMessage}
-                </div>
-              </div>
-            </div>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 text-black whitespace-nowrap">
+                        <span className="text-[17px] font-bold leading-none flex items-center">
+                          {selectedSubscription?.name_office || subscriptionDetails[0].name_office}
+                        </span>
+                        <span className="text-gray-500 leading-none flex items-center">
+                          {parseInt((selectedSubscription?.month_coffice || subscriptionDetails[0].month_coffice).substring(2, 4))}월
+                        </span>
+                        <span className="text-gray-500 leading-none flex items-center">
+                          {selectedSubscription?.groupname_coffice || subscriptionDetails[0].groupname_coffice}
+                        </span>
+                      </div>
+                    </div>
+                  </button>
 
-            {showMessageModal && (
-              <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-[100]">
-                <div className="bg-white rounded-2xl p-6 w-[300px]">
-                  <h3 className="text-lg font-bold mb-4 text-gray-800">메시지 작성</h3>
-                  <div className="space-y-2">
-                    <textarea
-                      maxLength={40}
-                      value={newMessage}
-                      onChange={(e) => setNewMessage(e.target.value)}
-                      placeholder="메시지를 입력하세요"
-                      className="w-full border rounded-xl px-4 py-3 text-base text-gray-800"
-                      rows={2}
-                      required
+                  {isDropdownOpen && (
+                    <div className="absolute top-full left-0 mt-1 z-50 bg-white rounded-lg shadow-lg border">
+                      {subscriptionDetails
+                        .filter(subscription => 
+                          selectedSubscription ? 
+                            subscription.id_coffice !== selectedSubscription.id_coffice : 
+                            subscription.id_coffice !== subscriptionDetails[0].id_coffice
+                        )
+                        .map((subscription) => (
+                          <button
+                            key={subscription.id_coffice}
+                            onClick={() => {
+                              setSelectedSubscription(subscription)
+                              setIsDropdownOpen(false)
+                            }}
+                            className="flex items-center min-w-[260px] w-auto h-[50px] px-5 py-3 hover:bg-gray-50"
+                          >
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2 text-black whitespace-nowrap">
+                                <span className="text-[17px] font-bold leading-none">
+                                  {subscription.name_office}
+                                </span>
+                                <span className="text-gray-500 leading-none">
+                                  {parseInt(subscription.month_coffice.substring(2, 4))}월
+                                </span>
+                                <span className="text-gray-500 leading-none">
+                                  {subscription.groupname_coffice}
+                                </span>
+                              </div>
+                            </div>
+                          </button>
+                        ))}
+                    </div>
+                  )}
+                </div>
+
+                <div 
+                  className="flex flex-col items-center cursor-pointer"
+                  onClick={() => setShowProfileModal(true)}
+                >
+                  <div className="rounded-lg overflow-hidden border-1 border-gray-400 w-[50px] aspect-square">
+                    <ProfileCharacter
+                      profileStyle={selectedUserData?.profilestyle_user}
+                      size={48}
+                      className="profile-main"
                     />
-                    <p className="text-sm text-gray-500">
-                      최대 40자까지 입력 가능합니다. ({newMessage.length}/40)
-                    </p>
-                  </div>
-                  <div className="flex gap-2 mt-4">
-                    <button
-                      type="button"
-                      onClick={() => setShowMessageModal(false)}
-                      className="flex-1 btn btn-outline text-gray-800"
-                    >
-                      취소
-                    </button>
-                    <button
-                      onClick={updateCofficeMessage}
-                      className="flex-1 btn bg-[#FFFF00] hover:bg-[#FFFF00] text-black border-1 border-black shadow-none"
-                    >
-                      저장
-                    </button>
                   </div>
                 </div>
               </div>
             )}
 
-            <div className="mt-8">
-              <div className="text-[20px] font-semibold text-gray-800 ml-4">
-              
-                출석 현황
-              </div>
-              <div className="flex gap-2 overflow-x-auto scrollbar-hide px-4 pt-3 pb-4">
-                {selectedSubscription.dates
-                  .find(date => date.date === selectedDate)
-                  ?.members
-                  .sort((a, b) => {
-                    const statusOrder = {
-                      '일등': 0,
-                      '출석': 1,
-                      '지각': 2,
-                      '결석': 3,
-                      null: 4 // 대기 상태
-                    };
-                    
-                    const statusA = memberStatus[selectedSubscription.id_coffice]
-                      ?.dates[selectedDate]
-                      ?.members[a.id_user]
-                      ?.status_user;
-                    
-                    const statusB = memberStatus[selectedSubscription.id_coffice]
-                      ?.dates[selectedDate]
-                      ?.members[b.id_user]
-                      ?.status_user;
-                    
-                    return statusOrder[statusA] - statusOrder[statusB];
-                  })
-                  .map(member => {
-                    const status = memberStatus[selectedSubscription.id_coffice]
-                      ?.dates[selectedDate]
-                      ?.members[member.id_user];
-                    const memberInfo = membersInfo[member.id_user];
-                    const isCurrentUser = member.id_user === selectedUserData?.id_user;
+            {showProfileModal && (
+              <ProfileEditModal
+                user={selectedUserData}
+                onClose={handleCloseProfileModal}
+                onUpdate={handleProfileUpdate}
+                className="text-black"
+              />
+            )}
 
-                    return (
-                      <MemberCard 
-                        key={`${member.id_user}-${selectedDate}`}
-                        member={member}
-                        date={selectedDate}
-                        officeId={selectedSubscription.id_coffice}
-                        memberInfo={memberInfo}
-                        status={status}
-                        selectedUserData={selectedUserData}
-                        memberStatus={memberStatus}
-                      />
-                    );
-                  })}
-              </div>
+            {selectedSubscription && (
+              <>
+                <div className="mt-2 mb-2">
+                  <div className="flex gap-2 overflow-x-auto scrollbar-hide px-4 py-4 justify-center">
+                    {selectedSubscription.dates.map((dateInfo) => {
+                      const isPast = compareDates(dateInfo.date, userData.timestamp) < 0;
+                      const isSelected = dateInfo.date === selectedDate;
+                      const date = new Date(dateInfo.date);
+                      const month = String(date.getMonth() + 1).padStart(2, '0');
+                      const day = String(date.getDate()).padStart(2, '0');
+                      
+                      let offDates = [];
+                      if (selectedSubscription.offdate_coffice) {
+                        if (Array.isArray(selectedSubscription.offdate_coffice)) {
+                          offDates = selectedSubscription.offdate_coffice;
+                        } else if (typeof selectedSubscription.offdate_coffice === 'string') {
+                          offDates = selectedSubscription.offdate_coffice.split(',').map(d => d.trim());
+                        }
+                      }
+                      
+                      const isOffDay = offDates.includes(dateInfo.date);
 
-              <button
-                onClick={createAttendanceEvent}
-                disabled={isButtonDisabled || isLoading}
-                className={`
-                  btn w-[288px] h-[48px] mx-auto mt-4 block
-                  border border-[#c8c8c8] normal-case rounded-lg
-                  relative
-                  ${isButtonDisabled || isLoading
-                    ? 'bg-[#DEDEDE] text-black hover:bg-[#DEDEDE]' 
-                    : 'bg-[#FFFF00] text-black hover:bg-[#FFFF00]'
-                  }
-                `}
-              >
-                <div className="flex items-center justify-center gap-2">
-                  {isLoading ? (
-                    <span className="loading loading-spinner loading-sm"></span>
-                  ) : (
-                    <span className="text-[16px] font-semibold">{attendanceMessage}</span>
-                  )}
+                      return (
+                        <button
+                          key={dateInfo.date}
+                          onClick={() => !isOffDay && setSelectedDate(dateInfo.date)}
+                          disabled={isOffDay}
+                          className={`
+                            shrink grow min-w-[45px] max-w-[60px] h-[32px] 
+                            flex items-center justify-center 
+                            rounded-full text-[13px] border-1 border-gray-350
+                            ${isOffDay
+                              ? 'bg-red-100 text-red-500 cursor-not-allowed'
+                              : isSelected
+                                ? 'bg-[#FFFF00] text-black border-black'
+                                : isPast
+                                  ? 'bg-gray-100 text-gray-500 border-gray-200'
+                                  : 'bg-white text-black hover:bg-gray-50'
+                              }
+                          `}
+                        >
+                          <span className="font-medium text-[13px] whitespace-nowrap">
+                            {`${month}/${day}`}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
-              </button>
-            </div>
+
+                <Timer 
+                  selectedSubscription={selectedSubscription} 
+                  officeInfo={officeInfo}
+                  selectedDate={selectedDate}
+                />
+
+                <div className="flex flex-col items-start mt-8 mb-4 px-4">
+                  <div className="flex items-center gap-0 mb-1">
+                    <div className="text-[19px] font-semibold text-gray-800">1등의 메시지</div>
+                    <div className="relative">
+                      <div 
+                        className="w- h-5 flex items-center justify-center cursor-pointer"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          const tooltip = e.currentTarget.nextElementSibling;
+                          const allTooltips = document.querySelectorAll('.message-tooltip');
+                          
+                          allTooltips.forEach(t => {
+                            if (t !== tooltip) t.classList.add('hidden');
+                          });
+                          
+                          tooltip.classList.toggle('hidden');
+                          
+                          setTimeout(() => {
+                            tooltip.classList.add('hidden');
+                          }, 5000);
+                        }}
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                      </div>
+                      <div className="message-tooltip hidden absolute left-[-12px] bottom-full mb-2 w-[180px] bg-gray-800/80 text-white text-sm rounded-lg p-3 z-50">
+                        <div className="text-gray-200">일등으로 출석한 사람이</div>
+                        <div className="text-gray-200">메시지를 수정할 수 있어요.</div>
+                        <div className="absolute left-4 top-full w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[6px] border-t-gray-800/80"></div>
+                      </div>
+                    </div>
+                    {(() => {
+                      const today = new Date().toISOString().split('T')[0];
+                      const currentUserStatus = memberStatus[selectedSubscription?.id_coffice]
+                        ?.dates[today]
+                        ?.members[selectedUserData?.id_user]
+                        ?.status_user;
+                      
+                      return selectedDate === today && currentUserStatus === '일등' && (
+                        <button 
+                          onClick={() => setShowMessageModal(true)}
+                          className="ml-2 px-2 py-0.5 text-black text-xs rounded-lg bg-[#FFFF00] border-1 border-black"
+                        >
+                          작성
+                        </button>
+                      );
+                    })()}
+                  </div>
+                  <div className="w-full">
+                    <div className="text-gray-600 text-lg font-medium break-words whitespace-pre-line" style={{ maxHeight: '2.5em', lineHeight: '1.25em', overflow: 'hidden' }}>
+                      {cofficeMessage}
+                    </div>
+                  </div>
+                </div>
+
+                {showMessageModal && (
+                  <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-[100]">
+                    <div className="bg-white rounded-2xl p-6 w-[300px]">
+                      <h3 className="text-lg font-bold mb-4 text-gray-800">메시지 작성</h3>
+                      <div className="space-y-2">
+                        <textarea
+                          maxLength={40}
+                          value={newMessage}
+                          onChange={(e) => setNewMessage(e.target.value)}
+                          placeholder="메시지를 입력하세요"
+                          className="w-full border rounded-xl px-4 py-3 text-base text-gray-800"
+                          rows={2}
+                          required
+                        />
+                        <p className="text-sm text-gray-500">
+                          최대 40자까지 입력 가능합니다. ({newMessage.length}/40)
+                        </p>
+                      </div>
+                      <div className="flex gap-2 mt-4">
+                        <button
+                          type="button"
+                          onClick={() => setShowMessageModal(false)}
+                          className="flex-1 btn btn-outline text-gray-800"
+                        >
+                          취소
+                        </button>
+                        <button
+                          onClick={updateCofficeMessage}
+                          className="flex-1 btn bg-[#FFFF00] hover:bg-[#FFFF00] text-black border-1 border-black shadow-none"
+                        >
+                          저장
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                <div className="mt-8">
+                  <div className="text-[20px] font-semibold text-gray-800 ml-4">
+                  
+                    출석 현황
+                  </div>
+                  <div className="flex gap-2 overflow-x-auto scrollbar-hide px-4 pt-3 pb-4">
+                    {selectedSubscription.dates
+                      .find(date => date.date === selectedDate)
+                      ?.members
+                      .sort((a, b) => {
+                        const statusOrder = {
+                          '일등': 0,
+                          '출석': 1,
+                          '지각': 2,
+                          '결석': 3,
+                          null: 4 // 대기 상태
+                        };
+                        
+                        const statusA = memberStatus[selectedSubscription.id_coffice]
+                          ?.dates[selectedDate]
+                          ?.members[a.id_user]
+                          ?.status_user;
+                        
+                        const statusB = memberStatus[selectedSubscription.id_coffice]
+                          ?.dates[selectedDate]
+                          ?.members[b.id_user]
+                          ?.status_user;
+                        
+                        return statusOrder[statusA] - statusOrder[statusB];
+                      })
+                      .map(member => {
+                        const status = memberStatus[selectedSubscription.id_coffice]
+                          ?.dates[selectedDate]
+                          ?.members[member.id_user];
+                        const memberInfo = membersInfo[member.id_user];
+                        const isCurrentUser = member.id_user === selectedUserData?.id_user;
+
+                        return (
+                          <MemberCard 
+                            key={`${member.id_user}-${selectedDate}`}
+                            member={member}
+                            date={selectedDate}
+                            officeId={selectedSubscription.id_coffice}
+                            memberInfo={memberInfo}
+                            status={status}
+                            selectedUserData={selectedUserData}
+                            memberStatus={memberStatus}
+                          />
+                        );
+                      })}
+                  </div>
+
+                  <button
+                    onClick={createAttendanceEvent}
+                    disabled={isButtonDisabled || isLoading}
+                    className={`
+                      btn w-[288px] h-[48px] mx-auto mt-4 block
+                      border border-[#c8c8c8] normal-case rounded-lg
+                      relative
+                      ${isButtonDisabled || isLoading
+                        ? 'bg-[#DEDEDE] text-black hover:bg-[#DEDEDE]' 
+                        : 'bg-[#FFFF00] text-black hover:bg-[#FFFF00]'
+                      }
+                    `}
+                  >
+                    <div className="flex items-center justify-center gap-2">
+                      {isLoading ? (
+                        <span className="loading loading-spinner loading-sm"></span>
+                      ) : (
+                        <span className="text-[16px] font-semibold">{attendanceMessage}</span>
+                      )}
+                    </div>
+                  </button>
+                </div>
+              </>
+            )}
           </>
         )}
 

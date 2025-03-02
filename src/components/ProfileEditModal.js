@@ -101,13 +101,16 @@ export default function ProfileEditModal({ user, onClose, onUpdate }) {
     const yearMonth = `${String(currentDate.getFullYear()).slice(-2)}${String(currentDate.getMonth() + 1).padStart(2, '0')}`
     
     try {
+      // 쿼리 수정
       const { data, error } = await supabase
         .from('subscriptions')
         .select(`
-          coffices!inner (
+          id_user,
+          activation,
+          coffices (
             day_coffice,
             month_coffice,
-            offices!inner (
+            offices (
               name_office,
               address_office,
               tel_office,
@@ -127,6 +130,14 @@ export default function ProfileEditModal({ user, onClose, onUpdate }) {
 
       if (error) throw error
       
+      console.log('원본 데이터:', data) // 디버깅용
+
+      // 데이터가 없는 경우 빈 배열 반환
+      if (!data || data.length === 0) {
+        setSubscriptionData([])
+        return
+      }
+
       // 데이터 구조 변환
       const formattedData = data.reduce((acc, sub) => {
         const existingOffice = acc.find(item => item.name_office === sub.coffices.offices.name_office);
@@ -153,12 +164,12 @@ export default function ProfileEditModal({ user, onClose, onUpdate }) {
         return acc;
       }, []);
       
-      console.log('원본 데이터:', data)  // 원본 데이터 출력
       console.log('변환된 데이터:', formattedData)  // 변환된 데이터 출력
       
       setSubscriptionData(formattedData)
     } catch (error) {
       console.error('구독 정보 조회 실패:', error)
+      setSubscriptionData([]) // 에러 발생 시 빈 배열로 설정
     }
   }
 
@@ -272,6 +283,11 @@ export default function ProfileEditModal({ user, onClose, onUpdate }) {
 //       // 다른 스타일 속성들...
 //     }
 //   }
+
+  // 시간 포맷 함수 추가
+  const formatTime = (time) => {
+    return time ? time.substring(0, 5) : time; // "HH:MM:SS" -> "HH:MM"
+  }
 
   return (
     <div className="fixed inset-0 z-50 animate-slide-down overflow-y-auto" style={{ backgroundColor: '#FFFFC9' }}>
@@ -435,13 +451,12 @@ export default function ProfileEditModal({ user, onClose, onUpdate }) {
           </div>
         </div>
 
-        {/* 로그아웃 버튼 - flex-shrink-0으로 고정 크기 유지 */}
+        {/* 로그아웃 버튼 스타일 수정 */}
         <div className="px-4 mt-8 flex-shrink-0">
           <button
             type="button"
             onClick={handleLogout}
-            className="btn w-full rounded-lg py-3 text-white"
-            style={{ backgroundColor: '#727272', borderRadius: '8px' }}
+            className="w-full btn bg-[#FFFF00] hover:bg-[#FFFF00] text-black border-1 border-black rounded-lg py-3"
           >
             로그아웃
           </button>
@@ -464,7 +479,7 @@ export default function ProfileEditModal({ user, onClose, onUpdate }) {
               <button
                 type="button"
                 onClick={startNameEdit}
-                className="flex-1 btn btn-primary"
+                className="flex-1 btn bg-[#FFFF00] hover:bg-[#FFFF00] text-black border-1 border-black"
               >
                 수정
               </button>
@@ -541,26 +556,26 @@ export default function ProfileEditModal({ user, onClose, onUpdate }) {
               <div>
                 <label className="text-sm text-black block mb-1 font-bold">운영시간</label>
                 <div className="space-y-1 text-sm text-black">
-                  <p>월요일  {selectedOffice.operation_office[0] ? 
-                    `${selectedOffice.operation_office[0][0]} ~ ${selectedOffice.operation_office[0][1]}` : 
+                  <p>월요일&nbsp; {selectedOffice.operation_office[0] ? 
+                    `${formatTime(selectedOffice.operation_office[0][0])} ~ ${formatTime(selectedOffice.operation_office[0][1])}` : 
                     '휴무'}</p>
-                  <p>화요일  {selectedOffice.operation_office[1] ? 
-                    `${selectedOffice.operation_office[1][0]} ~ ${selectedOffice.operation_office[1][1]}` : 
+                  <p>화요일&nbsp; {selectedOffice.operation_office[1] ? 
+                    `${formatTime(selectedOffice.operation_office[1][0])} ~ ${formatTime(selectedOffice.operation_office[1][1])}` : 
                     '휴무'}</p>
-                  <p>수요일  {selectedOffice.operation_office[2] ? 
-                    `${selectedOffice.operation_office[2][0]} ~ ${selectedOffice.operation_office[2][1]}` : 
+                  <p>수요일&nbsp; {selectedOffice.operation_office[2] ? 
+                    `${formatTime(selectedOffice.operation_office[2][0])} ~ ${formatTime(selectedOffice.operation_office[2][1])}` : 
                     '휴무'}</p>
-                  <p>목요일  {selectedOffice.operation_office[3] ? 
-                    `${selectedOffice.operation_office[3][0]} ~ ${selectedOffice.operation_office[3][1]}` : 
+                  <p>목요일&nbsp;   {selectedOffice.operation_office[3] ? 
+                    `${formatTime(selectedOffice.operation_office[3][0])} ~ ${formatTime(selectedOffice.operation_office[3][1])}` : 
                     '휴무'}</p>
-                  <p>금요일  {selectedOffice.operation_office[4] ? 
-                    `${selectedOffice.operation_office[4][0]} ~ ${selectedOffice.operation_office[4][1]}` : 
+                  <p>금요일&nbsp;   {selectedOffice.operation_office[4] ? 
+                    `${formatTime(selectedOffice.operation_office[4][0])} ~ ${formatTime(selectedOffice.operation_office[4][1])}` : 
                     '휴무'}</p>
-                  <p>토요일  {selectedOffice.operation_office[5] ? 
-                    `${selectedOffice.operation_office[5][0]} ~ ${selectedOffice.operation_office[5][1]}` : 
+                  <p>토요일&nbsp;   {selectedOffice.operation_office[5] ? 
+                    `${formatTime(selectedOffice.operation_office[5][0])} ~ ${formatTime(selectedOffice.operation_office[5][1])}` : 
                     '휴무'}</p>
-                  <p>일요일  {selectedOffice.operation_office[6] ? 
-                    `${selectedOffice.operation_office[6][0]} ~ ${selectedOffice.operation_office[6][1]}` : 
+                  <p>일요일&nbsp;   {selectedOffice.operation_office[6] ? 
+                    `${formatTime(selectedOffice.operation_office[6][0])} ~ ${formatTime(selectedOffice.operation_office[6][1])}` : 
                     '휴무'}</p>
                 </div>
               </div>
@@ -703,11 +718,11 @@ export default function ProfileEditModal({ user, onClose, onUpdate }) {
             </div>
 
             {/* 하단 버튼 - 고정 */}
-            <div className="mt-6 flex gap-3">
+            <div className="mt-6 flex gap-2">
               <button
                 type="button"
                 onClick={() => setIsCharacterModalOpen(false)}
-                className="flex-1 py-3 bg-gray-200 text-gray-700 rounded-xl font-medium"
+                className="flex-1 btn btn-outline"
               >
                 취소
               </button>
@@ -746,7 +761,7 @@ export default function ProfileEditModal({ user, onClose, onUpdate }) {
                     alert('프로필 업데이트에 실패했습니다. 다시 시도해주세요.');
                   }
                 }}
-                className="flex-1 py-3 bg-blue-500 text-white rounded-xl font-medium"
+                className="flex-1 btn bg-[#FFFF00] hover:bg-[#FFFF00] text-black border-1 border-black"
               >
                 적용하기
               </button>
