@@ -120,18 +120,18 @@ const Timer = ({ selectedSubscription, officeInfo, selectedDate }) => {
   const time = formatTime(timeLeft || 0);
 
   return (
-    <div className="flex flex-col items-start">
+    <div className="flex flex-col items-start h-[14vh] mt-[7vh] mb-[5vh]">
       <div className="text-[20px] font-semibold text-gray-800 mb-3 px-4">
         남은 시간
       </div>
-      <div className="border-2 border-gray-300 bg-gray-100 rounded-lg p-3 w-full max-w-[320px] mx-auto">
+      <div className="border-2 border-gray-300 bg-gray-100 rounded-lg p-3 w-full max-w-[320px] mx-auto h-[15vh] mb-[3vh]">
         <div className="flex justify-center items-center">
           <span className="font-mono text-[25px] text-black">
             {`${time.hours} : ${time.minutes} : ${time.seconds}`}
           </span>
         </div>
       </div>
-      <div className="w-full h-[1px] bg-gray-200 mt-8"></div>
+      <div className="w-full h-[1px] bg-gray-200 mt-2"></div>
     </div>
   );
 };
@@ -192,26 +192,26 @@ const MemberCard = ({
     });
   };
 
-  // 길게 누르기 시작
-  const handleTouchStart = () => {
-    if (!isCurrentUser) return;
+  // // 길게 누르기 시작
+  // const handleTouchStart = () => {
+  //   if (!isCurrentUser) return;
     
-    const timer = setTimeout(() => {
-      setIsEditing(true);
-      setEditMessage('');
-      setShowTooltip(true);
-    }, 500);
+  //   const timer = setTimeout(() => {
+  //     setIsEditing(true);
+  //     setEditMessage('');
+  //     setShowTooltip(true);
+  //   }, 500);
     
-    setLongPressTimer(timer);
-  };
+  //   setLongPressTimer(timer);
+  // };
 
-  // 길게 누르기 취소
-  const handleTouchEnd = () => {
-    if (longPressTimer) {
-      clearTimeout(longPressTimer);
-      setLongPressTimer(null);
-    }
-  };
+  // // 길게 누르기 취소
+  // const handleTouchEnd = () => {
+  //   if (longPressTimer) {
+  //     clearTimeout(longPressTimer);
+  //     setLongPressTimer(null);
+  //   }
+  // };
 
   // 상태에 따른 색상을 반환하는 함수 추가
   const getStatusColor = (status) => {
@@ -1675,7 +1675,7 @@ export default function Home() {
         ) : (
           <>
             {subscriptionDetails.length > 0 && userData && (
-              <div className="flex justify-between items-start w-full max-w-[1200px] mx-auto px-4">
+              <div className="flex justify-between items-start w-full max-w-[1200px] mx-auto px-4 h-[9vh]">
                 <div className="relative" ref={dropdownRef}>
                   <button
                     onClick={() => setIsDropdownOpen(!isDropdownOpen)}
@@ -1758,8 +1758,8 @@ export default function Home() {
 
             {selectedSubscription && (
               <>
-                <div className="mt-2 mb-2">
-                  <div className="flex gap-2 overflow-x-auto scrollbar-hide px-4 py-4 justify-center">
+                <div className="h-[5vh] flex items-center mb-[10px]">
+                  <div className="flex gap-2 overflow-x-auto scrollbar-hide px-4 py-4 justify-center w-full">
                     {selectedSubscription.dates.map((dateInfo) => {
                       const isPast = compareDates(dateInfo.date, userData.timestamp) < 0;
                       const isSelected = dateInfo.date === selectedDate;
@@ -1784,7 +1784,7 @@ export default function Home() {
                           onClick={() => !isOffDay && setSelectedDate(dateInfo.date)}
                           disabled={isOffDay}
                           className={`
-                            shrink grow min-w-[45px] max-w-[60px] h-[32px] 
+                            shrink grow min-w-[45px] max-w-[60px] h-[5vh] 
                             flex items-center justify-center 
                             rounded-full text-[13px] border-1 border-gray-350
                             ${isOffDay
@@ -1806,13 +1806,15 @@ export default function Home() {
                   </div>
                 </div>
 
-                <Timer 
-                  selectedSubscription={selectedSubscription} 
-                  officeInfo={officeInfo}
-                  selectedDate={selectedDate}
-                />
+                <div className="h-[20vh] flex flex-col justify-center">
+                  <Timer 
+                    selectedSubscription={selectedSubscription} 
+                    officeInfo={officeInfo}
+                    selectedDate={selectedDate}
+                  />
+                </div>
 
-                <div className="flex flex-col items-start mt-8 mb-4 px-4">
+                <div className="flex flex-col h-[15vh] justify-center px-4 mb-[2vh] mt-[-2vh]">
                   <div className="flex items-center gap-0 mb-1">
                     <div className="text-[19px] font-semibold text-gray-800">1등의 메시지</div>
                     <div className="relative">
@@ -1868,122 +1870,89 @@ export default function Home() {
                     })()}
                   </div>
                   <div className="w-full">
-                    <div className="text-gray-600 text-lg font-medium break-words whitespace-pre-line" style={{ maxHeight: '2.5em', lineHeight: '1.25em', overflow: 'hidden' }}>
+                    <div className="text-gray-600 text-lg font-medium break-words whitespace-pre-line" 
+                         style={{ maxHeight: '2.5em', lineHeight: '1.25em', overflow: 'hidden' }}>
                       {cofficeMessage}
                     </div>
                   </div>
                 </div>
 
-                {showMessageModal && (
-                  <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-[100]">
-                    <div className="bg-white rounded-2xl p-6 w-[300px]">
-                      <h3 className="text-lg font-bold mb-4 text-gray-800">메시지 작성</h3>
-                      <div className="space-y-2">
-                        <textarea
-                          maxLength={40}
-                          value={newMessage}
-                          onChange={(e) => setNewMessage(e.target.value)}
-                          placeholder="메시지를 입력하세요"
-                          className="w-full border rounded-xl px-4 py-3 text-base text-gray-800"
-                          rows={2}
-                          required
-                        />
-                        <p className="text-sm text-gray-500">
-                          최대 40자까지 입력 가능합니다. ({newMessage.length}/40)
-                        </p>
-                      </div>
-                      <div className="flex gap-2 mt-4">
-                        <button
-                          type="button"
-                          onClick={() => setShowMessageModal(false)}
-                          className="flex-1 btn btn-outline text-gray-800"
-                        >
-                          취소
-                        </button>
-                        <button
-                          onClick={updateCofficeMessage}
-                          className="flex-1 btn bg-[#FFFF00] hover:bg-[#FFFF00] text-black border-1 border-black shadow-none"
-                        >
-                          저장
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                <div className="mt-8">
-                  <div className="text-[20px] font-semibold text-gray-800 ml-4">
-                  
+                <div className="h-[50vh] flex flex-col">
+                  <div className="text-[20px] font-semibold text-gray-800 ml-4 mb-2">
                     출석 현황
                   </div>
-                  <div className="flex gap-2 overflow-x-auto scrollbar-hide px-4 pt-3 pb-4">
-                    {selectedSubscription.dates
-                      .find(date => date.date === selectedDate)
-                      ?.members
-                      .sort((a, b) => {
-                        const statusOrder = {
-                          '일등': 0,
-                          '출석': 1,
-                          '지각': 2,
-                          '결석': 3,
-                          null: 4 // 대기 상태
-                        };
-                        
-                        const statusA = memberStatus[selectedSubscription.id_coffice]
-                          ?.dates[selectedDate]
-                          ?.members[a.id_user]
-                          ?.status_user;
-                        
-                        const statusB = memberStatus[selectedSubscription.id_coffice]
-                          ?.dates[selectedDate]
-                          ?.members[b.id_user]
-                          ?.status_user;
-                        
-                        return statusOrder[statusA] - statusOrder[statusB];
-                      })
-                      .map(member => {
-                        const status = memberStatus[selectedSubscription.id_coffice]
-                          ?.dates[selectedDate]
-                          ?.members[member.id_user];
-                        const memberInfo = membersInfo[member.id_user];
-                        const isCurrentUser = member.id_user === selectedUserData?.id_user;
+                  <div className="flex-1 overflow-y-auto">
+                    <div className="flex gap-2 overflow-x-auto scrollbar-hide px-4 pb-4">
+                      {selectedSubscription.dates
+                        .find(date => date.date === selectedDate)
+                        ?.members
+                        .sort((a, b) => {
+                          const statusOrder = {
+                            '일등': 0,
+                            '출석': 1,
+                            '지각': 2,
+                            '결석': 3,
+                            null: 4 // 대기 상태
+                          };
+                          
+                          const statusA = memberStatus[selectedSubscription.id_coffice]
+                            ?.dates[selectedDate]
+                            ?.members[a.id_user]
+                            ?.status_user;
+                          
+                          const statusB = memberStatus[selectedSubscription.id_coffice]
+                            ?.dates[selectedDate]
+                            ?.members[b.id_user]
+                            ?.status_user;
+                          
+                          return statusOrder[statusA] - statusOrder[statusB];
+                        })
+                        .map(member => {
+                          const status = memberStatus[selectedSubscription.id_coffice]
+                            ?.dates[selectedDate]
+                            ?.members[member.id_user];
+                          const memberInfo = membersInfo[member.id_user];
+                          const isCurrentUser = member.id_user === selectedUserData?.id_user;
 
-                        return (
-                          <MemberCard 
-                            key={`${member.id_user}-${selectedDate}`}
-                            member={member}
-                            date={selectedDate}
-                            officeId={selectedSubscription.id_coffice}
-                            memberInfo={memberInfo}
-                            status={status}
-                            selectedUserData={selectedUserData}
-                            memberStatus={memberStatus}
-                          />
-                        );
-                      })}
+                          return (
+                            <MemberCard 
+                              key={`${member.id_user}-${selectedDate}`}
+                              member={member}
+                              date={selectedDate}
+                              officeId={selectedSubscription.id_coffice}
+                              memberInfo={memberInfo}
+                              status={status}
+                              selectedUserData={selectedUserData}
+                              memberStatus={memberStatus}
+                            />
+                          );
+                        })}
+                    </div>
                   </div>
 
-                  <button
-                    onClick={createAttendanceEvent}
-                    disabled={isButtonDisabled || isLoading}
-                    className={`
-                      btn w-[288px] h-[48px] mx-auto mt-4 block
-                      border border-[#c8c8c8] normal-case rounded-lg
-                      relative
-                      ${isButtonDisabled || isLoading
-                        ? 'bg-[#DEDEDE] text-black hover:bg-[#DEDEDE]' 
-                        : 'bg-[#FFFF00] text-black hover:bg-[#FFFF00]'
-                      }
-                    `}
-                  >
-                    <div className="flex items-center justify-center gap-2">
-                      {isLoading ? (
-                        <span className="loading loading-spinner loading-sm"></span>
-                      ) : (
-                        <span className="text-[16px] font-semibold">{attendanceMessage}</span>
-                      )}
-                    </div>
-                  </button>
+                  <div className="py-4 flex justify-center mb-[6vh]">
+                    <button
+                      onClick={createAttendanceEvent}
+                      disabled={isButtonDisabled || isLoading}
+                      className={`
+                        btn w-[288px] h-[48px] mx-auto block
+                        border border-[#c8c8c8] normal-case rounded-lg
+                        relative
+                        ${isButtonDisabled || isLoading
+                          ? 'bg-[#DEDEDE] text-black hover:bg-[#DEDEDE]' 
+                          : 'bg-[#FFFF00] text-black hover:bg-[#FFFF00]'
+                        }
+                      `}
+                    >
+                      <div className="flex items-center justify-center gap-2">
+                        {isLoading ? (
+                          <span className="loading loading-spinner loading-sm"></span>
+                        ) : (
+                          <span className="text-[16px] font-semibold">{attendanceMessage}</span>
+                        )}
+                      </div>
+                    </button>
+                  </div>
                 </div>
               </>
             )}
