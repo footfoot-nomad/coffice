@@ -675,59 +675,73 @@ const AuthForm = ({ onAuthSuccess }) => {
   }
 
   return (
-    <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-[100]">
-      <div className="bg-white rounded-2xl p-6 w-[320px]">
-        <h2 className="text-2xl font-bold mb-6 text-center">
-          {isSignUp ? '회원가입' : '로그인'}
-        </h2>
-        <form onSubmit={handleAuth} className="space-y-4">
-          {isSignUp && (
+    <div className="fixed inset-0 bg-[#64c1ff] flex flex-col min-h-screen">
+      {/* 상단 로고 영역 - 전체 높이의 30% */}
+      <div className="h-[30vh] flex flex-col items-center justify-center gap-4 mt-[30px]">
+        <img src="/img/togetheroffice.png" alt="Together Office" className="w-[250px]" />
+        <img src="/img/co-office.png" alt="Co Office" className="w-[250px]" />
+      </div>
+
+      {/* 중앙 로그인/회원가입 폼 - 전체 높이의 50% */}
+      <div className="h-[50vh] flex items-center justify-center px-4">
+        <div className="bg-white rounded-2xl p-6 w-full max-w-[320px]">
+          <h2 className="text-2xl font-bold mb-6 text-center">
+            {isSignUp ? '회원가입' : '로그인'}
+          </h2>
+          <form onSubmit={handleAuth} className="space-y-4">
+            {isSignUp && (
+              <input
+                type="text"
+                placeholder="이름"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="w-full px-4 py-2 border rounded-lg"
+                required
+              />
+            )}
             <input
-              type="text"
-              placeholder="이름"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
+              type="email"
+              placeholder="이메일"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               className="w-full px-4 py-2 border rounded-lg"
               required
             />
-          )}
-          <input
-            type="email"
-            placeholder="이메일"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full px-4 py-2 border rounded-lg"
-            required
-          />
-          <input
-            type="password"
-            placeholder="비밀번호"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full px-4 py-2 border rounded-lg"
-            required
-          />
-          {message && (
-            <p className="text-sm text-center text-red-500">{message}</p>
-          )}
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full btn bg-[#FFFF00] hover:bg-[#FFFF00] text-black border-1 border-black"
-          >
-            {loading ? (
-              <span className="loading loading-spinner loading-sm"></span>
-            ) : (
-              isSignUp ? '가입하기' : '로그인'
+            <input
+              type="password"
+              placeholder="비밀번호"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full px-4 py-2 border rounded-lg"
+              required
+            />
+            {message && (
+              <p className="text-sm text-center text-red-500">{message}</p>
             )}
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full btn bg-[#FFFF00] hover:bg-[#FFFF00] text-black border-1 border-black"
+            >
+              {loading ? (
+                <span className="loading loading-spinner loading-sm"></span>
+              ) : (
+                isSignUp ? '가입하기' : '로그인'
+              )}
+            </button>
+          </form>
+          <button
+            onClick={() => setIsSignUp(!isSignUp)}
+            className="w-full mt-4 text-sm text-gray-600 hover:underline"
+          >
+            {isSignUp ? '이미 계정이 있으신가요? 로그인' : '계정이 없으신가요? 회원가입'}
           </button>
-        </form>
-        <button
-          onClick={() => setIsSignUp(!isSignUp)}
-          className="w-full mt-4 text-sm text-gray-600 hover:underline"
-        >
-          {isSignUp ? '이미 계정이 있으신가요? 로그인' : '계정이 없으신가요? 회원가입'}
-        </button>
+        </div>
+      </div>
+
+      {/* 하단 로고 영역 - 전체 높이의 20% */}
+      <div className="h-[20vh] flex items-center justify-center">
+        <img src="/img/nomadrang.png" alt="Nomadrang" className="w-[120px]" />
       </div>
     </div>
   )
