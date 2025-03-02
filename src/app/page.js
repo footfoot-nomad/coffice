@@ -44,25 +44,15 @@ const Timer = ({ selectedSubscription, officeInfo, selectedDate }) => {
   useEffect(() => {
     if (!selectedSubscription || !officeInfo) return;
 
-    // 오늘 날짜
     const today = new Date();
-    today.setHours(0, 0, 0, 0);  // 시간 초기화
+    today.setHours(0, 0, 0, 0);
 
-    // 선택된 날짜 - selectedDate prop 사용
-    const selectedDateObj = new Date(selectedDate); // selectedSubscription.dates[0].date 대신 selectedDate 사용
-    selectedDateObj.setHours(0, 0, 0, 0);  // 시간 초기화
+    const selectedDateObj = new Date(selectedDate);
+    selectedDateObj.setHours(0, 0, 0, 0);
 
-    // 정확히 오늘 날짜인지 확인
     const isExactToday = today.getTime() === selectedDateObj.getTime();
     setIsExactToday(isExactToday);
-    
-    // isExactToday 값을 콘솔에 출력
-    console.log('isExactToday:', isExactToday, {
-      today: today.toISOString(),
-      selectedDate: selectedDateObj.toISOString()
-    });
 
-    // 정확히 오늘 날짜가 아니면 타이머를 실행하지 않음
     if (!isExactToday) {
       setTimeLeft(null);
       return;
@@ -82,40 +72,25 @@ const Timer = ({ selectedSubscription, officeInfo, selectedDate }) => {
       const now = new Date();
       const operationHours = officeInfo[selectedSubscription.id_office]?.[dayMapping[selectedSubscription.day_coffice]];
       
-      console.log('selectedSubscription', selectedSubscription);
-      console.log('officeInfo', officeInfo);
-      console.log('operationHours', operationHours);
-      console.log('dayMapping', dayMapping);
-      
-
       if (!operationHours) return null;
 
-      // 영업 시작 시간 (HH:MM:SS 형식)
       const [startHour, startMinute, startSecond] = operationHours[0].split(':').map(Number);
       const startTime = new Date();
       startTime.setHours(startHour, startMinute, startSecond);
 
-      // 출석 마감 시간 (HH:MM 형식)
       const [attendHour, attendMinute] = selectedSubscription.attendtime_coffice.split(':').map(Number);
       const attendTime = new Date();
-      attendTime.setHours(attendHour, attendMinute, 0); // 초는 0으로 설정
+      attendTime.setHours(attendHour, attendMinute, 0);
       
-
-      // 총 카운트다운 시간 (영업 시작 ~ 출석 마감)
       const totalCountdownTime = attendTime - startTime;
-      console.log('totalCountdownTime', totalCountdownTime);
 
-      // 현재 상태에 따른 남은 시간 계산
       if (now < startTime) {
-        // 영업 시작 전: 총 카운트다운 시간 표시
         setTimerStatus('waiting');
         return totalCountdownTime;
       } else if (now < attendTime) {
-        // 출석 가능 시간: 카운트다운 진행
         setTimerStatus('counting');
         return attendTime - now;
       } else {
-        // 출석 마감 후
         setTimerStatus('ended');
         return 0;
       }
@@ -564,7 +539,13 @@ const AuthForm = ({ onAuthSuccess }) => {
 
     try {
       if (isSignUp) {
-        // 회원가입 - 이메일 제한 없이
+        // 먼저 동일한 이메일을 가진 사용자가 있는지 확인
+        const { data: existingUsers, error: checkError } = await supabase
+          .from('users')
+          .select('*')
+          .eq('email_user', email)
+
+        // 회원가입 진행
         const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
           email,
           password,
@@ -572,18 +553,33 @@ const AuthForm = ({ onAuthSuccess }) => {
 
         if (signUpError) throw signUpError
 
-        // 사용자 정보 저장
-        const { error: profileError } = await supabase
-          .from('users')
-          .insert([
-            {
+        if (existingUsers && existingUsers.length > 0) {
+          // 기존 사용자가 있는 경우 정보 업데이트
+          const { error: updateError } = await supabase
+            .from('users')
+            .update({
               uuid_user: signUpData.user.id.toString(),
-              email_user: email,
-              name_user: name
-            }
-          ])
+              name_user: name,
+            })
+            .eq('email_user', email)
 
-        if (profileError) throw profileError
+          if (updateError) throw updateError
+        } else {
+          // 새로운 사용자 생성
+          const { error: profileError } = await supabase
+            .from('users')
+            .insert([
+              {
+                uuid_user: signUpData.user.id.toString(),
+                email_user: email,
+                name_user: name,
+                profilestyle_user: '{0,0,1,0,5}'
+              }
+            ])
+
+          if (profileError) throw profileError
+        }
+
         setMessage('가입 확인 이메일을 확인해주세요.')
 
       } else {
@@ -760,7 +756,7 @@ export default function Home() {
           return;
         }
 
-        console.log('초기 이벤트 로그 데이터 로드:', eventLogData);
+        console.log('🔄 event_log 데이터 로드:', eventLogData);
 
         // memberStatus 객체 초기화
         const newMemberStatus = {};
@@ -830,134 +826,111 @@ export default function Home() {
 
   // eventLog 변경 시 memberStatus 업데이트를 위한 useEffect
   useEffect(() => {
-    if (!eventLog || !subscriptionInfo) return;
+    console.log('🔄 event_log 상태 업데이트:', eventLog);
+  }, [eventLog]);
 
-    console.group('memberStatus 업데이트 시작');
-    console.log('eventLog 데이터:', eventLog);
-
-    try {
-      // memberStatus 객체 초기화
-      const newMemberStatus = {};
-
-      // 기본 구조 생성
-      subscriptionInfo.forEach(subscription => {
-        const officeId = subscription.id_coffice;
-        newMemberStatus[officeId] = { dates: {} };
-
-        subscription.dates.forEach(dateInfo => {
-          const date = dateInfo.date;
-          newMemberStatus[officeId].dates[date] = { members: {} };
-
-          // 각 멤버의 기본 상태 설정 (status_user 제외)
-          dateInfo.members.forEach(member => {
-            newMemberStatus[officeId].dates[date].members[member.id_user] = {
-              id_user: member.id_user,
-              message_user: null,
-              timestamp_user: null
-            };
-          });
-        });
-      });
-
-      // eventLog로 상태 업데이트
-      eventLog.forEach(event => {
-        const officeId = event.id_coffice;
-        const eventDate = event.date_event;
-        const userId = event.id_user;
-
-        // 해당 날짜와 멤버가 존재하는지 확인
-        if (newMemberStatus[officeId]?.dates[eventDate]?.members[userId]) {
-          const currentStatus = newMemberStatus[officeId].dates[eventDate].members[userId];
-          const currentTimestamp = currentStatus.timestamp_user 
-            ? new Date(currentStatus.timestamp_user) 
-            : new Date(0);
-          const newTimestamp = new Date(event.timestamp_event);
-
-          // 최신 이벤트인 경우에만 업데이트
-          if (newTimestamp > currentTimestamp) {
-            newMemberStatus[officeId].dates[eventDate].members[userId] = {
-              id_user: userId,
-              status_user: event.type_event,
-              message_user: event.message_event,
-              timestamp_user: event.timestamp_event
-            };
-
-            console.log('멤버 상태 업데이트:', {
-              officeId,
-              date: eventDate,
-              userId,
-              newStatus: event.type_event,
-              timestamp: event.timestamp_event
-            });
-          }
-        }
-      });
-
-      console.log('새로운 memberStatus:', newMemberStatus);
-      setMemberStatus(newMemberStatus);
-
-    } catch (error) {
-      console.error('memberStatus 업데이트 중 오류:', error);
-    }
-
-    console.groupEnd();
-  }, [eventLog, subscriptionInfo]);
-
-  // memberStatus 변경 감지를 위한 useEffect 추가
-  useEffect(() => {
-    console.log('memberStatus 변경됨:', memberStatus);
-  }, [memberStatus]);
-
-  // Supabase 실시간 구독 설정
+  // Supabase 실시간 구독 설정 수정
   useEffect(() => {
     if (!subscriptionInfo) return;
 
     const cofficeIds = subscriptionInfo.map(sub => sub.id_coffice);
     
-    const subscription = supabase
-      .channel('event_log_changes')
-      .on('postgres_changes', 
+    const channel = supabase
+      .channel('realtime_updates')
+      .on(
+        'postgres_changes',
         {
           event: '*',
           schema: 'public',
           table: 'event_log',
-          filter: `id_coffice=in.(${cofficeIds.join(',')})` 
+          filter: `id_coffice=in.(${cofficeIds.join(',')})`,
         },
         async (payload) => {
-          console.group('📡 실시간 이벤트 감지');
-          console.log('이벤트 타입:', payload.eventType);
-          console.log('데이터:', payload.new || payload.old);
+          console.log('실시간 이벤트 수신:', payload);
 
-          // 현재 eventLog 가져오기
-          let updatedEventLog = [...(eventLog || [])];
+          // 새로운 이벤트 데이터 가져오기
+          const { data: latestData, error } = await supabase
+            .from('event_log')
+            .select('*')
+            .in('id_coffice', cofficeIds);
 
-          switch (payload.eventType) {
-            case 'INSERT':
-              updatedEventLog = [...updatedEventLog, payload.new];
-              break;
-            case 'UPDATE':
-              updatedEventLog = updatedEventLog.map(log => 
-                log.id_event === payload.new.id_event ? payload.new : log
-              );
-              break;
-            case 'DELETE':
-              updatedEventLog = updatedEventLog.filter(log => 
-                log.id_event !== payload.old.id_event
-              );
-              break;
+          if (error) {
+            console.error('데이터 업데이트 실패:', error);
+            return;
           }
 
-          console.log('업데이트된 eventLog:', updatedEventLog);
-          setEventLog(updatedEventLog);
-          console.groupEnd();
+          // memberStatus 업데이트
+          setMemberStatus(prevStatus => {
+            const newStatus = { ...prevStatus };
+            
+            latestData.forEach(event => {
+              const { id_coffice, date_event, id_user, type_event, message_event, timestamp_event } = event;
+              
+              if (!newStatus[id_coffice]) {
+                newStatus[id_coffice] = { dates: {} };
+              }
+              if (!newStatus[id_coffice].dates[date_event]) {
+                newStatus[id_coffice].dates[date_event] = { members: {} };
+              }
+              
+              newStatus[id_coffice].dates[date_event].members[id_user] = {
+                id_user,
+                status_user: type_event,
+                message_user: message_event,
+                timestamp_user: timestamp_event
+              };
+            });
+
+            return newStatus;
+          });
+
+          // eventLog 업데이트
+          setEventLog(latestData);
+        }
+      )
+      .subscribe((status) => {
+        console.log('구독 상태:', status);
+      });
+
+    // 구독 해제
+    return () => {
+      console.log('실시간 구독 해제');
+      channel.unsubscribe();
+    };
+  }, [subscriptionInfo]);
+
+  // coffices 테이블 실시간 업데이트 구독 추가
+  useEffect(() => {
+    if (!selectedSubscription) return;
+
+    const channel = supabase
+      .channel('coffice_updates')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'coffices',
+          filter: `id_coffice=eq.${selectedSubscription.id_coffice}`
+        },
+        (payload) => {
+          console.log('코피스 업데이트:', payload);
+          if (payload.new?.message_coffice) {
+            setCofficeMessage(payload.new.message_coffice);
+          }
         }
       )
       .subscribe();
 
     return () => {
-      subscription.unsubscribe();
+      channel.unsubscribe();
     };
-  }, [subscriptionInfo, eventLog]);
+  }, [selectedSubscription]);
+
+  // 디버깅을 위한 memberStatus 모니터링
+  useEffect(() => {
+    console.log('memberStatus 변경됨:', memberStatus);
+  }, [memberStatus]);
 
   // 출석 버튼 상태 관리
   useEffect(() => {
@@ -1034,38 +1007,38 @@ export default function Home() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('사용자 정보를 찾을 수 없습니다.')
 
-      // 먼저 사용자 정보 조회
+      // 사용자 정보 조회 및 설정
       const { data: existingUser, error: fetchError } = await supabase
         .from('users')
         .select('*')
         .eq('uuid_user', user.id)
         .single()
 
-      // 사용자 정보가 없으면 새로 생성
+      let currentUser;
       if (fetchError && fetchError.code === 'PGRST116') {
         const { data: newUser, error: insertError } = await supabase
           .from('users')
-          .insert([
-            {
-              uuid_user: user.id,
-              email_user: user.email,
-              name_user: user.email.split('@')[0],
-              profilestyle_user: '{0,0,1,0,5}'
-            }
-          ])
+          .insert([{
+            uuid_user: user.id,
+            email_user: user.email,
+            name_user: user.email.split('@')[0],
+            profilestyle_user: '{0,0,1,0,5}'
+          }])
           .select()
           .single()
 
         if (insertError) throw insertError
+        currentUser = newUser;
         setSelectedUserData(newUser)
         setUserData({ ...newUser, timestamp: new Date().toISOString() })
       } else {
         if (fetchError) throw fetchError
+        currentUser = existingUser;
         setSelectedUserData(existingUser)
         setUserData({ ...existingUser, timestamp: new Date().toISOString() })
       }
 
-      // 구독 정보 가져오기 (수정된 쿼리)
+      // 구독 정보 가져오기
       const { data: subscriptions, error: subscriptionError } = await supabase
         .from('subscriptions')
         .select(`
@@ -1096,20 +1069,31 @@ export default function Home() {
             )
           )
         `)
-        .eq('id_user', existingUser?.id_user || newUser?.id_user)
+        .eq('id_user', currentUser.id_user)
         .eq('activation', true)
 
       if (subscriptionError) throw subscriptionError
 
-      // 구독 정보 가공 - dates 동적 생성
-      const processedSubscriptions = subscriptions.map(sub => {
-        // getDatesForMonth를 사용하여 해당 월의 날짜 배열 생성
+      // 각 구독에 대한 모든 멤버 정보 가져오기
+      const processedSubscriptions = await Promise.all(subscriptions.map(async sub => {
+        const { data: allMembers, error: membersError } = await supabase
+          .from('subscriptions')
+          .select(`
+            users (
+              id_user
+            )
+          `)
+          .eq('id_coffice', sub.id_coffice)
+          .eq('activation', true);
+
+        if (membersError) throw membersError;
+
         const dates = getDatesForMonth(sub.coffices.month_coffice, sub.coffices.day_coffice)
           .map(date => ({
             date,
-            members: [{
-              id_user: existingUser?.id_user || newUser?.id_user
-            }]
+            members: allMembers.map(member => ({
+              id_user: member.users.id_user
+            }))
           }));
 
         return {
@@ -1122,8 +1106,8 @@ export default function Home() {
           name_office: sub.coffices.offices.name_office,
           id_office: sub.coffices.offices.id_office,
           dates
-        }
-      })
+        };
+      }));
 
       setSubscriptionDetails(processedSubscriptions)
       if (processedSubscriptions.length > 0) {
@@ -1146,6 +1130,76 @@ export default function Home() {
       })
       setOfficeInfo(officesInfo)
 
+      // event_log 데이터 초기 로드 추가
+      if (processedSubscriptions.length > 0) {
+        const cofficeIds = processedSubscriptions.map(sub => sub.id_coffice);
+        const { data: eventLogData, error: eventLogError } = await supabase
+          .from('event_log')
+          .select('*')
+          .in('id_coffice', cofficeIds);
+
+        if (eventLogError) {
+          console.error('이벤트 로그 초기 로드 실패:', eventLogError);
+        } else {
+          console.log('🔄 event_log 초기 데이터 로드:', eventLogData);
+          setEventLog(eventLogData);
+
+          // memberStatus 객체 초기화
+          const newMemberStatus = {};
+
+          // 기본 구조 생성
+          processedSubscriptions.forEach(subscription => {
+            const officeId = subscription.id_coffice;
+            newMemberStatus[officeId] = {
+              dates: {}
+            };
+
+            subscription.dates.forEach(dateInfo => {
+              newMemberStatus[officeId].dates[dateInfo.date] = {
+                members: {}
+              };
+
+              // 각 멤버의 기본 상태 설정
+              dateInfo.members.forEach(member => {
+                newMemberStatus[officeId].dates[dateInfo.date].members[member.id_user] = {
+                  id_user: member.id_user,
+                  message_user: null,
+                  status_user: null
+                };
+              });
+            });
+          });
+
+          // eventLog로 상태 업데이트
+          eventLogData.forEach(event => {
+            const officeId = event.id_coffice;
+            const eventDate = event.date_event;
+            const userId = event.id_user;
+
+            // 해당 날짜의 이전 이벤트가 있는지 확인
+            const currentStatus = newMemberStatus[officeId]?.dates[eventDate]?.members[userId];
+            
+            if (currentStatus) {
+              // 타임스탬프를 비교하여 최신 이벤트만 적용
+              const currentTimestamp = currentStatus.timestamp_user ? new Date(currentStatus.timestamp_user) : new Date(0);
+              const newTimestamp = new Date(event.timestamp_event);
+
+              if (newTimestamp > currentTimestamp) {
+                newMemberStatus[officeId].dates[eventDate].members[userId] = {
+                  id_user: userId,
+                  status_user: event.type_event,
+                  message_user: event.message_event,
+                  timestamp_user: event.timestamp_event
+                };
+              }
+            }
+          });
+
+          console.log('🔄 memberStatus 초기화:', newMemberStatus);
+          setMemberStatus(newMemberStatus);
+        }
+      }
+
       // 멤버 정보 가져오기
       if (processedSubscriptions.length > 0) {
         const { data: memberData, error: memberError } = await supabase
@@ -1164,7 +1218,6 @@ export default function Home() {
 
         if (memberError) throw memberError
 
-        // 멤버 정보 객체 생성
         const membersInfo = memberData.reduce((acc, item) => {
           acc[item.users.id_user] = item.users
           return acc
@@ -1387,7 +1440,6 @@ export default function Home() {
           filter: `id_coffice=eq.${selectedSubscription.id_coffice}`
         },
         (payload) => {
-          console.log('실시간 업데이트 수신:', payload);
           setCofficeMessage(payload.new.message_coffice || '오늘도 함께 코피스~');
         }
       )
@@ -1432,17 +1484,12 @@ export default function Home() {
       .on(
         'postgres_changes',
         {
-          event: '*', // INSERT, UPDATE, DELETE 모든 이벤트 감지
+          event: '*',
           schema: 'public',
           table: 'users'
         },
         async (payload) => {
-          console.group('👤 Users 테이블 변경 감지');
-          console.log('이벤트 타입:', payload.eventType);
-          console.log('변경된 데이터:', payload.new || payload.old);
-
           try {
-            // 현재 선택된 코피스의 모든 멤버 정보 재조회
             const { data: memberData, error: memberError } = await supabase
               .from('subscriptions')
               .select(`
@@ -1459,7 +1506,6 @@ export default function Home() {
 
             if (memberError) throw memberError;
 
-            // 멤버 정보 객체 업데이트
             const updatedMembersInfo = memberData.reduce((acc, item) => {
               acc[item.users.id_user] = {
                 id_user: item.users.id_user,
@@ -1472,13 +1518,9 @@ export default function Home() {
             }, {});
 
             setMembersInfo(updatedMembersInfo);
-            console.log('업데이트된 멤버 정보:', updatedMembersInfo);
-
           } catch (error) {
-            console.error('멤버 정보 업데이트 실패:', error);
+            // 에러 처리는 유지하되 콘솔 로그 제거
           }
-
-          console.groupEnd();
         }
       )
       .subscribe();
@@ -1486,6 +1528,54 @@ export default function Home() {
     return () => {
       channel.unsubscribe();
     };
+  }, [selectedSubscription]);
+
+  useEffect(() => {
+    if (!selectedSubscription) return;
+
+    const channel = supabase
+      .channel('event_log_changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'event_log',
+          filter: `id_coffice=eq.${selectedSubscription.id_coffice}`
+        },
+        async (payload) => {
+          console.log('이벤트 로그 변경 감지:', payload);
+
+          // 상태 업데이트를 함수형 업데이트로 변경
+          setMemberStatus(prevStatus => {
+            const newStatus = { ...prevStatus };
+            const { new: newEvent } = payload;
+            
+            if (!newEvent) return prevStatus;
+
+            const { id_coffice, date_event, id_user, type_event, message_event, timestamp_event } = newEvent;
+
+            if (!newStatus[id_coffice]) {
+              newStatus[id_coffice] = { dates: {} };
+            }
+            if (!newStatus[id_coffice].dates[date_event]) {
+              newStatus[id_coffice].dates[date_event] = { members: {} };
+            }
+
+            newStatus[id_coffice].dates[date_event].members[id_user] = {
+              id_user,
+              status_user: type_event,
+              message_user: message_event,
+              timestamp_user: timestamp_event
+            };
+
+            return newStatus;
+          });
+        }
+      )
+      .subscribe();
+
+    return () => channel.unsubscribe();
   }, [selectedSubscription]);
 
   return (
@@ -1821,3 +1911,4 @@ export default function Home() {
     </div>
   )
 }
+
