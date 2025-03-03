@@ -685,7 +685,7 @@ const AuthForm = ({ onAuthSuccess }) => {
       {/* 중앙 로그인/회원가입 폼 - 전체 높이의 50% */}
       <div className="h-[50vh] flex items-center justify-center px-4">
         <div className="bg-white rounded-2xl p-6 w-full max-w-[320px]">
-          <h2 className="text-2xl font-bold mb-6 text-center">
+          <h2 className="text-2xl font-bold mb-6 text-center text-gray-800">
             {isSignUp ? '회원가입' : '로그인'}
           </h2>
           <form onSubmit={handleAuth} className="space-y-4">
@@ -695,7 +695,7 @@ const AuthForm = ({ onAuthSuccess }) => {
                 placeholder="이름"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full px-4 py-2 border rounded-lg"
+                className="w-full px-4 py-2 border rounded-lg text-gray-800 placeholder-gray-400"
                 required
               />
             )}
@@ -704,7 +704,7 @@ const AuthForm = ({ onAuthSuccess }) => {
               placeholder="이메일"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-2 border rounded-lg"
+              className="w-full px-4 py-2 border rounded-lg text-gray-800 placeholder-gray-400"
               required
             />
             <input
@@ -712,7 +712,7 @@ const AuthForm = ({ onAuthSuccess }) => {
               placeholder="비밀번호"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-2 border rounded-lg"
+              className="w-full px-4 py-2 border rounded-lg text-gray-800 placeholder-gray-400"
               required
             />
             {message && (
@@ -721,7 +721,7 @@ const AuthForm = ({ onAuthSuccess }) => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full btn bg-[#FFFF00] hover:bg-[#FFFF00] text-black border-1 border-black"
+              className="w-full btn bg-[#FFFF00] hover:bg-[#FFFF00] text-gray-800 border-1 border-black"
             >
               {loading ? (
                 <span className="loading loading-spinner loading-sm"></span>
@@ -732,7 +732,7 @@ const AuthForm = ({ onAuthSuccess }) => {
           </form>
           <button
             onClick={() => setIsSignUp(!isSignUp)}
-            className="w-full mt-4 text-sm text-gray-600 hover:underline"
+            className="w-full mt-4 text-sm text-gray-800 hover:underline"
           >
             {isSignUp ? '이미 계정이 있으신가요? 로그인' : '계정이 없으신가요? 회원가입'}
           </button>
