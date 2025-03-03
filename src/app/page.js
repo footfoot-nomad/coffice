@@ -1365,7 +1365,7 @@ export default function Home() {
       // 거리 계산
       const distance = calculateDistance(currentLat, currentLon, officeLat, officeLon);
 
-      if (distance > 50) {
+      if (distance > 100) {
         setIsLoading(false);
         const warningMessage = document.createElement('div');
         warningMessage.className = 'alert alert-warning w-[288px] fixed top-[calc(70vh+50px)] left-1/2 -translate-x-1/2 z-50';
