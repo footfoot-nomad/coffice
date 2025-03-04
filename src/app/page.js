@@ -1812,13 +1812,13 @@ export default function Home() {
                                 onClick={() => !isOffDay && setSelectedDate(dateInfo.date)}
                                 disabled={isOffDay}
                                 className={`
-                                  shrink grow min-w-[45px] max-w-[60px] h-[5vh] 
+                                  btn btn-circle shrink grow min-w-[45px] max-w-[60px] h-[5vh] 
                                   flex items-center justify-center 
-                                  rounded-full text-[13px] border-1 border-gray-350
+                                  border-2 border-black normal-case
                                   ${isOffDay
-                                    ? 'bg-red-100 text-red-500 cursor-not-allowed'
+                                    ? 'bg-red-100 text-red-500 cursor-not-allowed border-red-300'
                                     : isSelected
-                                      ? 'bg-[#FFFF00] text-black border-black'
+                                      ? 'bg-[#FFFF00] text-black'
                                       : isPast
                                         ? 'bg-gray-100 text-gray-500 border-gray-200'
                                         : 'bg-white text-black hover:bg-gray-50'
@@ -2002,8 +2002,8 @@ export default function Home() {
                                 onClick={createAttendanceEvent}
                                 disabled={isButtonDisabled || isLoading}
                                 className={`
-                                  btn w-[288px] h-[48px] mx-auto block
-                                  border-2 border-black normal-case rounded-lg
+                                  btn btn-circle w-[288px] h-[48px] mx-auto block
+                                  border-2 border-black normal-case
                                   relative
                                   ${isButtonDisabled || isLoading
                                     ? 'bg-[#DEDEDE] text-black hover:bg-[#DEDEDE] border-[#c8c8c8]' 
