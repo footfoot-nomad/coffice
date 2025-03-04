@@ -185,14 +185,10 @@ const MemberCard = ({
 
   // 타임스탬프 포맷팅
   const formatTimestamp = (timestamp) => {
-    if (!timestamp) return '';
-    const date = new Date(timestamp);
-    return date.toLocaleTimeString('ko-KR', {
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-      hour12: false
-    });
+    // timestamp에서 시간 부분만 추출 (예: "2024-03-20T14:30:00" -> "14:30")
+    const timeStr = timestamp.split('T')[1];
+    const [hours, minutes] = timeStr.split(':');
+    return `${hours}:${minutes}`;
   };
 
   // // 길게 누르기 시작
