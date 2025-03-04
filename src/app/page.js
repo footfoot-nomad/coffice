@@ -1986,29 +1986,42 @@ export default function Home() {
                         </div>
                         
                         {/* 출석 버튼 영역 */}
-                        <div className="flex justify-center mb-[2vh]">
-                          <button
-                            onClick={createAttendanceEvent}
-                            disabled={isButtonDisabled || isLoading}
-                            className={`
-                              btn w-[288px] h-[48px] mx-auto block
-                              border border-[#c8c8c8] normal-case rounded-lg
-                              relative
-                              ${isButtonDisabled || isLoading
-                                ? 'bg-[#DEDEDE] text-black hover:bg-[#DEDEDE]' 
-                                : 'bg-[#FFFF00] text-black hover:bg-[#FFFF00]'
-                              }
-                            `}
-                          >
-                            <div className="flex items-center justify-center gap-2">
-                              {isLoading ? (
-                                <span className="loading loading-spinner loading-sm"></span>
-                              ) : (
-                                <span className="text-[16px] font-semibold">{attendanceMessage}</span>
-                              )}
+                        {(() => {
+                          const today = new Date();
+                          const selectedDateObj = new Date(selectedDate);
+                          
+                          // 날짜 비교를 위해 시간을 00:00:00으로 설정
+                          today.setHours(0, 0, 0, 0);
+                          selectedDateObj.setHours(0, 0, 0, 0);
+                          
+                          const isToday = today.getTime() === selectedDateObj.getTime();
+                          
+                          return isToday ? (
+                            <div className="flex justify-center mb-[2vh]">
+                              <button
+                                onClick={createAttendanceEvent}
+                                disabled={isButtonDisabled || isLoading}
+                                className={`
+                                  btn w-[288px] h-[48px] mx-auto block
+                                  border border-[#c8c8c8] normal-case rounded-lg
+                                  relative
+                                  ${isButtonDisabled || isLoading
+                                    ? 'bg-[#DEDEDE] text-black hover:bg-[#DEDEDE]' 
+                                    : 'bg-[#FFFF00] text-black hover:bg-[#FFFF00]'
+                                  }
+                                `}
+                              >
+                                <div className="flex items-center justify-center gap-2">
+                                  {isLoading ? (
+                                    <span className="loading loading-spinner loading-sm"></span>
+                                  ) : (
+                                    <span className="text-[16px] font-semibold">{attendanceMessage}</span>
+                                  )}
+                                </div>
+                              </button>
                             </div>
-                          </button>
-                        </div>
+                          ) : null;
+                        })()}
                       </div>
                     </>
                   )}
