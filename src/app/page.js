@@ -1863,7 +1863,7 @@ export default function Home() {
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                               </svg>
                             </div>
-                            <div className="message-tooltip hidden absolute left-[-12px] bottom-full mb-2 w-[180px] bg-gray-800/80 text-white text-sm rounded-lg p-3 z-50">
+                            <div className="message-tooltip hidden absolute left-[-14px] bottom-full mb-2 w-[180px] bg-gray-800/80 text-white text-sm rounded-lg p-3 z-50">
                               <div className="text-gray-200">일등으로 출석한 사람이</div>
                               <div className="text-gray-200">메시지를 수정할 수 있어요.</div>
 
@@ -2011,7 +2011,7 @@ export default function Home() {
       {showMessageModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[100]">
           <div className="bg-white rounded-2xl p-6 w-[300px]">
-            <h3 className="text-lg font-bold mb-4">우리반 메시지 수정</h3>
+            <h3 className="text-lg font-bold mb-4">1등의 메시지</h3>
             <div className="space-y-2">
               <textarea 
                 value={newMessage}
