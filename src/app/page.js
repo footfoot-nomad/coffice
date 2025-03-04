@@ -1294,9 +1294,11 @@ export default function Home() {
 
       // 멤버 정보 가져오기
       if (processedSubscriptions.length > 0) {
+        const cofficeIds = processedSubscriptions.map(sub => sub.id_coffice);
         const { data: memberData, error: memberError } = await supabase
           .from('subscriptions')
           .select(`
+            id_coffice,
             users (
               id_user,
               name_user,
@@ -1305,7 +1307,7 @@ export default function Home() {
               profilestyle_user
             )
           `)
-          .eq('id_coffice', processedSubscriptions[0].id_coffice)
+          .in('id_coffice', cofficeIds)
           .eq('activation', true)
 
         if (memberError) throw memberError
@@ -1582,9 +1584,11 @@ export default function Home() {
         },
         async (payload) => {
           try {
+            const cofficeIds = subscriptionDetails.map(sub => sub.id_coffice);
             const { data: memberData, error: memberError } = await supabase
               .from('subscriptions')
               .select(`
+                id_coffice,
                 users (
                   id_user,
                   name_user,
@@ -1593,25 +1597,19 @@ export default function Home() {
                   profilestyle_user
                 )
               `)
-              .eq('id_coffice', selectedSubscription.id_coffice)
+              .in('id_coffice', cofficeIds)
               .eq('activation', true);
 
             if (memberError) throw memberError;
 
             const updatedMembersInfo = memberData.reduce((acc, item) => {
-              acc[item.users.id_user] = {
-                id_user: item.users.id_user,
-                name_user: item.users.name_user,
-                email_user: item.users.email_user,
-                contact_user: item.users.contact_user,
-                profilestyle_user: item.users.profilestyle_user
-              };
+              acc[item.users.id_user] = item.users;
               return acc;
             }, {});
 
             setMembersInfo(updatedMembersInfo);
           } catch (error) {
-            // 에러 처리는 유지하되 콘솔 로그 제거
+            console.error('멤버 정보 업데이트 실패:', error);
           }
         }
       )
@@ -1620,7 +1618,7 @@ export default function Home() {
     return () => {
       channel.unsubscribe();
     };
-  }, [selectedSubscription]);
+  }, [selectedSubscription, subscriptionDetails]);
 
   useEffect(() => {
     if (!selectedSubscription) return;
