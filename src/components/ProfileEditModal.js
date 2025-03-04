@@ -400,7 +400,7 @@ export default function ProfileEditModal({ user, onClose, onUpdate }) {
                       className="cursor-pointer space-y-1.5"
                       onClick={() => handleOfficeClick(sub)}
                     >
-                      <span className="block text-lg font-bold text-black flex items-center justify-center mb-0.5">
+                      <span className="text-lg font-bold text-black flex items-center justify-center mb-0.5">
                         <svg 
                           xmlns="http://www.w3.org/2000/svg" 
                           fill="none" 
