@@ -119,19 +119,18 @@ const Timer = ({ selectedSubscription, officeInfo, selectedDate }) => {
 
   const time = formatTime(timeLeft || 0);
 
+// 타이머 영역
+
   return (
-    <div className="flex flex-col items-start h-[10vh] w-full px-2">
-      <div className="border-2 border-black bg-gray-100 rounded-lg w-full max-w-[320px] mx-auto h-[10vh]">
+    <div className="flex flex-col items-start h-[11vh] w-full px-2">
+      <div className="border-2 border-black bg-gray-100 rounded-lg w-full max-w-[320px] mx-auto h-[12vh]">
         <div className="flex justify-center items-center h-full">
           <span className="text-[38px] text-black">
             {`${time.hours} : ${time.minutes} : ${time.seconds}`}
           </span>
         </div>
       </div>
-    
     </div>
-    
-    
   );
 };
 
@@ -363,46 +362,6 @@ const MemberCard = ({
                 </button>
               </div>
             )}
-          </div>
-        </div>
-      )}
-      
-      {/* 툴크 */}
-      {showTooltip && ((status?.message_user && !isEditing) || isEditing) && (
-        <div 
-          ref={tooltipRef}
-          className="fixed z-9999 transition-opacity duration-200"
-          style={{
-            left: cardRef.current ? `${cardRef.current.getBoundingClientRect().left + (cardRef.current.offsetWidth / 2)}px` : '0',
-            top: cardRef.current ? `${cardRef.current.getBoundingClientRect().top - 10}px` : '0',
-            transform: 'translate(-50%, -100%)',
-            opacity: showTooltip ? 1 : 0
-          }}
-        >
-          <div className="bg-gray-800 text-white px-4 py-2 rounded-lg text-sm w-[120px]">
-            {isEditing ? (
-              <input
-                type="text"
-                value={editMessage}
-                onChange={(e) => setEditMessage(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    e.preventDefault();
-                    updateMessage();
-                  }
-                }}
-                className="w-full px-2 py-1 text-black rounded-sm"
-                maxLength={20}
-                placeholder="새 메시지"
-                autoFocus
-                onClick={(e) => e.stopPropagation()}
-              />
-            ) : (
-              <div className="text-center">
-                {status.message_user}
-              </div>
-            )}
-            <div className="absolute w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[6px] border-t-gray-800 bottom-0 left-1/2 transform -translate-x-1/2 translate-y-[6px]" />
           </div>
         </div>
       )}
@@ -1843,15 +1802,15 @@ export default function Home() {
           </section>
 
           {/* 스톱워치 섹션 */}
-          <section className="flex-none px-4 pt-2 pb-4 h-[20vh] bg-white w-full">
+          <section className="flex-none px-4 pt-2 pb-4 h-[21vh] bg-white w-full">
             <div className="flex flex-col h-full">
               {/* 남은 시간 타이틀 영역 */}
-              <div className="flex-none px-2 py-2 pb-0">
+              <div className="flex-none px-2 py-2 pb-2">
                 <h2 className="text-lg font-semibold">남은 시간</h2>
               </div>
 
               {/* 스톱워치 영역 */}
-              <div className="flex-1 flex items-center justify-center w-full pb-1">
+              <div className="flex-1 flex items-center justify-center w-full pb-3">
                 <Timer 
                   selectedSubscription={selectedSubscription} 
                   officeInfo={officeInfo}
@@ -1865,12 +1824,47 @@ export default function Home() {
 <div className="flex justify-center w-full h-[1px] bg-gray-400"></div>  
 </section>
           {/* 1등의 메시지 영역 */}
-          <section className="flex-none p-4 pb-2 pt-3 bg-white h-[12vh]">
+          <section className="flex-none p-4 pb-2 pt-4 bg-white h-[13vh]">
             <div className="p-2 pt-2 pb-0">
-              <h3 className="font-semibold text-lg">1등 메시지</h3>
-              <div className="flex flex-col p-2 pt-1 min-h-[48px]">
-              <p>{cofficeMessage}</p>
+              <div className="flex items-center gap-1">
+                <h3 className="font-semibold text-lg">1등의 메시지</h3>
+                <div className="relative">
+                  <div 
+                    className="w-3 h-3 rounded-full border border-gray-400 flex items-center justify-center cursor-pointer"
+                    onClick={(e) => {
+                      const tooltip = e.currentTarget.nextElementSibling;
+                      tooltip.classList.remove('hidden');
+                      setTimeout(() => {
+                        tooltip.classList.add('hidden');
+                      }, 3000);
+                    }}
+                  >
+                    <span className="text-gray-500 text-xs">?</span>
+                  </div>
+                  <div className="hidden absolute left-1/2 -translate-x-1/2 bottom-full mb-2 z-30">
+                    <div className="bg-gray-800/80 text-white text-sm px-3 py-2 rounded-lg whitespace-nowrap">
+                      일등으로 출석한 사람이<br />
+                      해당 메시지를 작성할 수 있어요.
+                      <div className="absolute w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[6px] border-t-gray-800/60 bottom-0 left-1/2 transform -translate-x-1/2 translate-y-[6px]" />
+                    </div>
+                  </div>
                 </div>
+                {/* 일등인 사용자를 위한 작성 버튼 추가 */}
+                {memberStatus[selectedSubscription?.id_coffice]
+                  ?.dates[selectedDate]
+                  ?.members[selectedUserData?.id_user]
+                  ?.status_user === '일등' && (
+                  <button 
+                    className="btn btn-primary btn-xs ml-1"
+                    onClick={() => setShowMessageModal(true)}
+                  >
+                    작성
+                  </button>
+                )}
+              </div>
+              <div className="flex flex-col p-2 pt-1 min-h-[48px]">
+                <p>{cofficeMessage}</p>
+              </div>
             </div>
           </section>
 
