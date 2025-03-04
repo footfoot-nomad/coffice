@@ -786,23 +786,47 @@ export default function Home() {
     return d1.getTime() - d2.getTime()
   }
 
-  // 가장 가까운 미래 날짜 찾기
+  // 가장 가까운 미래 날짜 찾기 (offdate_coffice 제외)
   useEffect(() => {
     if (selectedSubscription && userData) {
-      const today = new Date(userData.timestamp)
-      const futureDates = selectedSubscription.dates
-        .filter(date => compareDates(date.date, today) >= 0)
-        .sort((a, b) => compareDates(a.date, b.date))
+      const today = new Date(userData.timestamp);
+      
+      // offdate_coffice 배열 생성
+      let offDates = [];
+      if (selectedSubscription.offdate_coffice) {
+        if (Array.isArray(selectedSubscription.offdate_coffice)) {
+          offDates = selectedSubscription.offdate_coffice;
+        } else if (typeof selectedSubscription.offdate_coffice === 'string') {
+          offDates = selectedSubscription.offdate_coffice.split(',').map(d => d.trim());
+        }
+      }
 
-      if (futureDates.length > 0) {
-        setSelectedDate(futureDates[0].date)
+      // offdate_coffice가 아닌 날짜들만 필터링
+      const availableDates = selectedSubscription.dates
+        .filter(date => !offDates.includes(date.date))
+        .sort((a, b) => compareDates(a.date, b.date));
+
+      // 오늘 날짜와 같거나 가장 가까운 미래 날짜 찾기
+      const todayDate = today.toISOString().split('T')[0];
+      const exactTodayDate = availableDates.find(date => date.date === todayDate);
+      
+      if (exactTodayDate) {
+        // 오늘 날짜가 있으면 선택
+        setSelectedDate(exactTodayDate.date);
       } else {
-        // 미래 날짜가 없는 경우 가장 마지막 날짜 선택
-        const lastDate = selectedSubscription.dates[selectedSubscription.dates.length - 1].date
-        setSelectedDate(lastDate)
+        // 오늘 이후의 가장 가까운 날짜 찾기
+        const futureDates = availableDates.filter(date => compareDates(date.date, today) >= 0);
+        
+        if (futureDates.length > 0) {
+          // 미래 날짜가 있으면 가장 가까운 날짜 선택
+          setSelectedDate(futureDates[0].date);
+        } else if (availableDates.length > 0) {
+          // 미래 날짜가 없으면 마지막 날짜 선택
+          setSelectedDate(availableDates[availableDates.length - 1].date);
+        }
       }
     }
-  }, [selectedSubscription, userData])
+  }, [selectedSubscription, userData]);
 
   // 초기 event_log 데이터 로드 및 memberStatus 설정
   useEffect(() => {
@@ -1178,7 +1202,13 @@ export default function Home() {
 
       setSubscriptionDetails(processedSubscriptions)
       if (processedSubscriptions.length > 0) {
-        setSelectedSubscription(processedSubscriptions[0])
+        // 오늘 요일과 같은 구독 상품 찾기
+        const today = new Date();
+        const dayNames = ['일', '월', '화', '수', '목', '금', '토'];
+        const todayDay = dayNames[today.getDay()];
+        
+        const sameWeekdaySubscription = processedSubscriptions.find(sub => sub.day_coffice === todayDay);
+        setSelectedSubscription(sameWeekdaySubscription || processedSubscriptions[0]);
       }
 
       // 오피스 정보 설정
