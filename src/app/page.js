@@ -1911,8 +1911,26 @@ export default function Home() {
                                   ?.dates[selectedDate]
                                   ?.members[b.id_user]
                                   ?.status_user;
+
+                                const timestampA = memberStatus[selectedSubscription.id_coffice]
+                                  ?.dates[selectedDate]
+                                  ?.members[a.id_user]
+                                  ?.timestamp_user;
+
+                                const timestampB = memberStatus[selectedSubscription.id_coffice]
+                                  ?.dates[selectedDate]
+                                  ?.members[b.id_user]
+                                  ?.timestamp_user;
                                 
-                                return statusOrder[statusA] - statusOrder[statusB];
+                                // 먼저 상태로 정렬
+                                const statusCompare = statusOrder[statusA] - statusOrder[statusB];
+                                
+                                // 상태가 같은 경우 timestamp로 정렬
+                                if (statusCompare === 0 && timestampA && timestampB) {
+                                  return new Date(timestampA) - new Date(timestampB);
+                                }
+                                
+                                return statusCompare;
                               })
                               .map(member => {
                                 const status = memberStatus[selectedSubscription.id_coffice]
