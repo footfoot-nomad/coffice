@@ -120,8 +120,8 @@ const Timer = ({ selectedSubscription, officeInfo, selectedDate }) => {
   const time = formatTime(timeLeft || 0);
 
   return (
-    <div className="flex flex-col items-start h-[22vh] mb-[3vh] mt-[10vh]">
-      <div className="text-[20px] font-semibold text-gray-800 mt-[3vh] mb-3 px-4">
+    <div className="flex flex-col items-start h-[22vh] mb-[3vh] mt-[7vh]">
+      <div className="text-[20px] font-semibold text-gray-800 mt-[2vh] mb-3 px-4">
         남은 시간
       </div>
       <div className="border-2 border-gray-300 bg-gray-100 rounded-lg p-3 w-full max-w-[320px] mx-auto h-[12vh]">
@@ -1833,8 +1833,8 @@ export default function Home() {
                         />
                       </div>
 
-                      <div className="flex flex-col h-[10vh] justify-center px-4 mt-[8vh] pb-[3vh]">
-                        <div className="flex items-center gap-0 mt-[max(20px,5vh)] mb-2">
+                      <div className="flex flex-col h-[10vh] justify-center px-4 mt-[7vh] pb-[3vh]">
+                        <div className="flex items-center gap-0 mt-[max(10px,2vh)] mb-2">
                           <div className="text-[19px] font-semibold text-gray-800 ">1등의 메시지</div>
                           <div className="relative">
                             <div 
@@ -1903,12 +1903,14 @@ export default function Home() {
                         </div>
                       </div>
 
-                      <div className="h-[42vh] flex flex-col mt-[3vh]">
+{/* 출석 현황 영역 */}
+                      <div className="h-[35vh] flex flex-col mt-[2vh]">
                         <div className="text-[20px] font-semibold text-gray-800 ml-4 mb-3">
                           출석 현황
                         </div>
-                        <div className="flex-1 overflow-y-auto mb-4  min-h-[180px]">
-                          <div className="flex gap-2 overflow-x-auto scrollbar-hide px-4 pb-4">
+                        {/* 출석 카드 영역 */}
+                        <div className="flex-1 overflow-y-auto mb-0  min-h-[180px]">
+                          <div className="flex gap-2 overflow-x-auto scrollbar-hide px-4 pb-0">
                             {selectedSubscription.dates
                               .find(date => date.date === selectedDate)
                               ?.members
@@ -1957,7 +1959,7 @@ export default function Home() {
                         </div>
                         
                         {/* 출석 버튼 영역 */}
-                        <div className="py-4 flex justify-center mb-[2vh]">
+                        <div className="flex justify-center mb-[2vh]">
                           <button
                             onClick={createAttendanceEvent}
                             disabled={isButtonDisabled || isLoading}
