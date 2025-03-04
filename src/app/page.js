@@ -191,27 +191,6 @@ const MemberCard = ({
     return `${hours}:${minutes}`;
   };
 
-  // // 길게 누르기 시작
-  // const handleTouchStart = () => {
-  //   if (!isCurrentUser) return;
-    
-  //   const timer = setTimeout(() => {
-  //     setIsEditing(true);
-  //     setEditMessage('');
-  //     setShowTooltip(true);
-  //   }, 500);
-    
-  //   setLongPressTimer(timer);
-  // };
-
-  // // 길게 누르기 취소
-  // const handleTouchEnd = () => {
-  //   if (longPressTimer) {
-  //     clearTimeout(longPressTimer);
-  //     setLongPressTimer(null);
-  //   }
-  // };
-
   // 상태에 따른 색상을 반환하는 함수 추가
   const getStatusColor = (status) => {
     switch (status) {
