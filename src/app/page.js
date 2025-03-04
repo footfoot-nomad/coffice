@@ -1673,7 +1673,7 @@ export default function Home() {
                 // 기존 컨텐츠
                 <>
                   {subscriptionDetails.length > 0 && userData && (
-                    <div className="flex justify-between items-start w-full max-w-[1200px] mx-auto px-4 h-[8vh]">
+                    <div className="flex justify-between items-start w-full max-w-[1200px] mx-auto h-[8vh]">
                       <div className="relative" ref={dropdownRef}>
                         <button
                           onClick={() => setIsDropdownOpen(!isDropdownOpen)}
