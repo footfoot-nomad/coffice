@@ -302,7 +302,7 @@ export default function ProfileEditModal({ user, onClose, onUpdate }) {
             console.error('onClose is not a function:', onClose);
           }
         }}
-        className="btn btn-circle btn-ghost absolute right-4 top-4 text-2xl z-100 text-black"
+        className="btn btn-circle btn-ghost border-none absolute right-4 top-4 text-2xl z-100 text-black"
       >
         ✕
       </button>
@@ -395,7 +395,7 @@ export default function ProfileEditModal({ user, onClose, onUpdate }) {
                   </div>
                 </div>
                 {subscriptionData.map((sub, index) => (
-                  <div key={index} className="text-center bg-gray-50 rounded-lg p-3 hover:bg-gray-100 transition-colors">
+                  <div key={index} className="text-center bg-gray-100 rounded-lg p-3 hover:bg-gray-200 transition-colors">
                     <div 
                       className="cursor-pointer space-y-1.5"
                       onClick={() => handleOfficeClick(sub)}
@@ -456,7 +456,7 @@ export default function ProfileEditModal({ user, onClose, onUpdate }) {
           <button
             type="button"
             onClick={handleLogout}
-            className="btn btn-primary w-[288px] h-[48px] mx-auto block bg-[#FF4A1F] hover:bg-[#FF4A1F] text-white"
+            className="btn btn-primary w-[288px] h-[48px] mx-auto block bg-[#FF4A1F] hover:bg-[#FF4A1F] text-white shadow-[0_2px_8px_rgba(0,0,0,0.15)]"
           >
             <span className="text-[16px] font-semibold">로그아웃</span>
           </button>
@@ -472,14 +472,14 @@ export default function ProfileEditModal({ user, onClose, onUpdate }) {
               <button
                 type="button"
                 onClick={() => setIsConfirmModalOpen(false)}
-                className="btn flex-1 btn-default"
+                className="btn flex-1 btn-default shadow-[0_2px_8px_rgba(0,0,0,0.15)]"
               >
                 취소
               </button>
               <button
                 type="button"
                 onClick={startNameEdit}
-                className="btn flex-1 btn-primary"
+                className="btn flex-1 btn-primary shadow-[0_2px_8px_rgba(0,0,0,0.15)]"
               >
                 수정
               </button>
@@ -511,13 +511,13 @@ export default function ProfileEditModal({ user, onClose, onUpdate }) {
                 <button
                   type="button"
                   onClick={() => setIsNameModalOpen(false)}
-                  className="btn flex-1 btn-default"
+                  className="btn flex-1 btn-default shadow-[0_2px_8px_rgba(0,0,0,0.15)]"
                 >
                   취소
                 </button>
                 <button
                   type="submit"
-                  className="btn flex-1 btn-primary"
+                  className="btn flex-1 btn-primary shadow-[0_2px_8px_rgba(0,0,0,0.15)]"
                 >
                   저장
                 </button>
@@ -542,7 +542,7 @@ export default function ProfileEditModal({ user, onClose, onUpdate }) {
               <h3 className="text-xl font-bold text-black">{selectedOffice.name_office}</h3>
               <button 
                 onClick={() => setIsOfficeModalOpen(false)}
-                className="btn btn-ghost btn-circle text-xl text-black"
+                className="btn btn-circle btn-ghost border-none text-xl text-black"
               >
                 ✕
               </button>
@@ -592,7 +592,8 @@ export default function ProfileEditModal({ user, onClose, onUpdate }) {
               <h3 className="text-xl font-bold text-black">캐릭터 편집</h3>
               <button 
                 onClick={() => setIsCharacterModalOpen(false)}
-                className="btn btn-ghost btn-circle text-xl text-black"
+                className="btn btn-circle btn-ghost border-none text-xl text-black"
+
               >
                 ✕
               </button>
@@ -627,7 +628,7 @@ export default function ProfileEditModal({ user, onClose, onUpdate }) {
                         key={i}
                         type="button"
                         onClick={() => updateCharacterInfo('hairNo', i)}
-                        className={`w-10 h-10 flex items-center justify-center border rounded-lg text-sm text-black
+                        className={`w-10 h-10 flex items-center justify-center border rounded-lg text-sm text-black shadow-[0_2px_8px_rgba(0,0,0,0.15)]
                           ${characterInfo.hairNo === i ? 'border-black bg-[#63C1FF]' : 'border-black'}`}
                       >
                         {i+1}
@@ -645,7 +646,7 @@ export default function ProfileEditModal({ user, onClose, onUpdate }) {
                         key={i}
                         type="button"
                         onClick={() => updateCharacterInfo('faceNo', i)}
-                        className={`w-10 h-10 flex items-center justify-center border rounded-lg text-sm text-black
+                        className={`w-10 h-10 flex items-center justify-center border rounded-lg text-sm text-black shadow-[0_2px_8px_rgba(0,0,0,0.15)]
                           ${characterInfo.faceNo === i ? 'border-black bg-[#63C1FF]' : 'border-black'}`}
                       >
                         {i+1}
@@ -666,7 +667,7 @@ export default function ProfileEditModal({ user, onClose, onUpdate }) {
                             key={index}
                             type="button"
                             onClick={() => updateCharacterInfo('hairColor', index)}
-                            className={`w-8 h-8 rounded-full border-2 ${
+                            className={`w-8 h-8 rounded-full border-2 shadow-[0_2px_8px_rgba(0,0,0,0.15)] ${
                               characterInfo.hairColor === index ? 'border-blue-500' : 'border-transparent'
                             }`}
                             style={{ backgroundColor: colorList[index] }}
@@ -683,7 +684,7 @@ export default function ProfileEditModal({ user, onClose, onUpdate }) {
                             key={index}
                             type="button"
                             onClick={() => updateCharacterInfo('backgroundColor', index)}
-                            className={`w-8 h-8 rounded-full border-2 ${
+                            className={`w-8 h-8 rounded-full border-2 shadow-[0_2px_8px_rgba(0,0,0,0.15)] ${
                               characterInfo.backgroundColor === index ? 'border-blue-500' : 'border-transparent'
                             }`}
                             style={{ backgroundColor: colorList[index] }}
@@ -697,7 +698,7 @@ export default function ProfileEditModal({ user, onClose, onUpdate }) {
                 <button
                   type="button"
                   onClick={randomGenerator}
-                  className="w-full rounded-xl py-3 font-medium mb-4 text-white relative overflow-hidden"
+                  className="w-full rounded-xl py-3 font-medium mb-4 text-white relative overflow-hidden shadow-[0_2px_8px_rgba(0,0,0,0.15)]"
                 >
                   <div className="absolute inset-0">
                     {colorList.map((color, index) => (
@@ -722,7 +723,7 @@ export default function ProfileEditModal({ user, onClose, onUpdate }) {
               <button
                 type="button"
                 onClick={() => setIsCharacterModalOpen(false)}
-                className="btn flex-1 btn-default"
+                className="btn flex-1 btn-default shadow-[0_2px_8px_rgba(0,0,0,0.15)]"
               >
                 취소
               </button>
@@ -761,7 +762,7 @@ export default function ProfileEditModal({ user, onClose, onUpdate }) {
                     alert('프로필 업데이트에 실패했습니다. 다시 시도해주세요.');
                   }
                 }}
-                className="btn flex-1 btn-primary"
+                className="btn flex-1 btn-primary shadow-[0_2px_8px_rgba(0,0,0,0.15)]"
               >
                 적용하기
               </button>
