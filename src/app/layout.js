@@ -13,12 +13,17 @@ const geistMono = Geist_Mono({
 export const metadata = {
   title: "코피스",
   description: "함께 출근하는 요일제 오피스 Co-Office",
-  themeColor: "#FFFF00",
   manifest: "/manifest.json",
   icons: [
     { rel: "icon", url: "/icons/favicon.ico" },
     { rel: "apple-touch-icon", url: "/icons/icon-192x192.png" }
   ]
+};
+
+export const viewport = {
+  themeColor: '#000000',
+  width: 'device-width',
+  initialScale: 1,
 };
 
 export default function RootLayout({ children }) {

@@ -517,7 +517,7 @@ export default function ProfileEditModal({ user, onClose, onUpdate }) {
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 btn btn-primary"
+                  className="flex-1 btn bg-[#FFFF00] hover:bg-[#FFFF00] text-black border-1 border-black"
                 >
                   저장
                 </button>

@@ -149,6 +149,9 @@ const MemberCard = ({
   selectedUserData,
   memberStatus
 }) => {
+  console.log('memberInfo:', memberInfo);  // memberInfo 데이터 확인
+  console.log('member:', member);          // member 데이터도 함께 확인
+  
   const [showTooltip, setShowTooltip] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editMessage, setEditMessage] = useState('');
@@ -1668,335 +1671,382 @@ export default function Home() {
   }, [selectedSubscription]);
 
   return (
-    <div className="flex justify-center min-h-screen bg-gray-50">
-      <main className="w-full max-w-[430px] min-h-screen bg-white p-4 mx-auto font-pretendard">
-        {showAuth ? (
-          <AuthForm onAuthSuccess={handleAuthSuccess} />
-        ) : (
-          <>
-            {subscriptionDetails.length === 0 ? (
-              // 구독 정보가 없을 때 표시할 화면
-              <div className="fixed inset-0 bg-[#64c1ff] flex flex-col items-center justify-center">
-                <div className="text-center mb-8">
-                  <div className="text-2xl font-bold text-white">
-                    구독 정보가 없습니다.<br /> 구독 정보가 등록될 때까지<br />잠시만 기다려 주세요.
+    <div className="relative"> {/* 기존 최상위 div */}
+      <div className="flex justify-center min-h-screen bg-gray-50">
+        <main className="w-full max-w-[430px] min-h-screen bg-white p-4 mx-auto font-pretendard">
+          {showAuth ? (
+            <AuthForm onAuthSuccess={handleAuthSuccess} />
+          ) : (
+            <>
+              {subscriptionDetails.length === 0 ? (
+                // 구독 정보가 없을 때 표시할 화면
+                <div className="fixed inset-0 bg-[#64c1ff] flex flex-col items-center justify-center">
+                  <div className="text-center mb-8">
+                    <div className="text-2xl font-bold text-white">
+                      구독 정보가 없습니다.<br /> 구독 정보가 등록될 때까지<br />잠시만 기다려 주세요.
+                    </div>
                   </div>
+                  <button
+                    onClick={async () => {
+                      await supabase.auth.signOut();
+                      setShowAuth(true);
+                    }}
+                    className="w-full max-w-[240px] btn bg-[#FFFF00] hover:bg-[#FFFF00] text-black border-1 border-black"
+                  >
+                    로그아웃
+                  </button>
                 </div>
-                <button
-                  onClick={async () => {
-                    await supabase.auth.signOut();
-                    setShowAuth(true);
-                  }}
-                  className="w-full max-w-[240px] btn bg-[#FFFF00] hover:bg-[#FFFF00] text-black border-1 border-black"
-                >
-                  로그아웃
-                </button>
-              </div>
-            ) : (
-              // 기존 컨텐츠
-              <>
-                {subscriptionDetails.length > 0 && userData && (
-                  <div className="flex justify-between items-start w-full max-w-[1200px] mx-auto px-4 h-[8vh]">
-                    <div className="relative" ref={dropdownRef}>
-                      <button
-                        onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                        className={`flex items-center min-w-[250px] w-auto h-[50px] px-5 py-3 border-1 border-gray-400 rounded-lg ${isDropdownOpen ? 'bg-gray-100' : 'bg-gray-100'}`}
-                      >
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 text-black whitespace-nowrap">
-                            <span className="text-[17px] font-bold leading-none flex items-center">
-                              {selectedSubscription?.name_office || subscriptionDetails[0].name_office}
-                            </span>
-                            <span className="text-gray-500 leading-none flex items-center">
-                              {parseInt((selectedSubscription?.month_coffice || subscriptionDetails[0].month_coffice).substring(2, 4))}월
-                            </span>
-                            <span className="text-gray-500 leading-none flex items-center">
-                              {selectedSubscription?.groupname_coffice || subscriptionDetails[0].groupname_coffice}
-                            </span>
-                          </div>
-                        </div>
-                      </button>
-
-                      {isDropdownOpen && (
-                        <div className="absolute top-full left-0 mt-1 z-50 bg-white rounded-lg shadow-lg border">
-                          {subscriptionDetails
-                            .filter(subscription => 
-                              selectedSubscription ? 
-                                subscription.id_coffice !== selectedSubscription.id_coffice : 
-                                subscription.id_coffice !== subscriptionDetails[0].id_coffice
-                            )
-                            .map((subscription) => (
-                              <button
-                                key={subscription.id_coffice}
-                                onClick={() => {
-                                  setSelectedSubscription(subscription)
-                                  setIsDropdownOpen(false)
-                                }}
-                                className="flex items-center min-w-[260px] w-auto h-[50px] px-5 py-3 hover:bg-gray-50"
-                              >
-                                <div className="flex-1">
-                                  <div className="flex items-center gap-2 text-black whitespace-nowrap">
-                                    <span className="text-[17px] font-bold leading-none">
-                                      {subscription.name_office}
-                                    </span>
-                                    <span className="text-gray-500 leading-none">
-                                      {parseInt(subscription.month_coffice.substring(2, 4))}월
-                                    </span>
-                                    <span className="text-gray-500 leading-none">
-                                      {subscription.groupname_coffice}
-                                    </span>
-                                  </div>
-                                </div>
-                              </button>
-                            ))}
-                        </div>
-                      )}
-                    </div>
-
-                    <div 
-                      className="flex flex-col items-center cursor-pointer"
-                      onClick={() => setShowProfileModal(true)}
-                    >
-                      <div className="rounded-lg overflow-hidden border-1 border-gray-400 w-[50px] aspect-square">
-                        <ProfileCharacter
-                          profileStyle={selectedUserData?.profilestyle_user}
-                          size={48}
-                          className="profile-main"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {showProfileModal && (
-                  <ProfileEditModal
-                    user={selectedUserData}
-                    onClose={handleCloseProfileModal}
-                    onUpdate={handleProfileUpdate}
-                    className="text-black"
-                  />
-                )}
-
-                {selectedSubscription && (
-                  <>
-                    <div className="h-[6vh] flex items-center mt-[max(10px,1vh)]">
-                      <div className="flex gap-[3vw] overflow-x-auto scrollbar-hide px-4 py-2 justify-center w-full">
-                        {selectedSubscription.dates.map((dateInfo) => {
-                          const isPast = compareDates(dateInfo.date, userData.timestamp) < 0;
-                          const isSelected = dateInfo.date === selectedDate;
-                          const date = new Date(dateInfo.date);
-                          const month = String(date.getMonth() + 1).padStart(2, '0');
-                          const day = String(date.getDate()).padStart(2, '0');
-                          
-                          let offDates = [];
-                          if (selectedSubscription.offdate_coffice) {
-                            if (Array.isArray(selectedSubscription.offdate_coffice)) {
-                              offDates = selectedSubscription.offdate_coffice;
-                            } else if (typeof selectedSubscription.offdate_coffice === 'string') {
-                              offDates = selectedSubscription.offdate_coffice.split(',').map(d => d.trim());
-                            }
-                          }
-                          
-                          const isOffDay = offDates.includes(dateInfo.date);
-
-                          return (
-                            <button
-                              key={dateInfo.date}
-                              onClick={() => !isOffDay && setSelectedDate(dateInfo.date)}
-                              disabled={isOffDay}
-                              className={`
-                                shrink grow min-w-[45px] max-w-[60px] h-[5vh] 
-                                flex items-center justify-center 
-                                rounded-full text-[13px] border-1 border-gray-350
-                                ${isOffDay
-                                  ? 'bg-red-100 text-red-500 cursor-not-allowed'
-                                  : isSelected
-                                    ? 'bg-[#FFFF00] text-black border-black'
-                                    : isPast
-                                      ? 'bg-gray-100 text-gray-500 border-gray-200'
-                                      : 'bg-white text-black hover:bg-gray-50'
-                                  }
-                              `}
-                            >
-                              <span className="font-medium text-[13px] whitespace-nowrap">
-                                {`${month}/${day}`}
-                              </span>
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-
-                    <div className="h-[18vh] flex flex-col justify-center">
-                      <Timer 
-                        selectedSubscription={selectedSubscription} 
-                        officeInfo={officeInfo}
-                        selectedDate={selectedDate}
-                      />
-                    </div>
-
-                    <div className="flex flex-col h-[10vh] justify-center px-4 mt-[8vh] pb-[3vh]">
-                      <div className="flex items-center gap-0 mt-[max(20px,5vh)] mb-2">
-                        <div className="text-[19px] font-semibold text-gray-800 ">1등의 메시지</div>
-                        <div className="relative">
-                          <div 
-                            className="w- h-5 flex items-center justify-center cursor-pointer"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              const tooltip = e.currentTarget.nextElementSibling;
-                              const allTooltips = document.querySelectorAll('.message-tooltip');
-                              
-                              allTooltips.forEach(t => {
-                                if (t !== tooltip) t.classList.add('hidden');
-                              });
-                              
-                              tooltip.classList.toggle('hidden');
-                              
-                              setTimeout(() => {
-                                tooltip.classList.add('hidden');
-                              }, 5000);
-                            }}
-                          >
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                          </div>
-                          <div className="message-tooltip hidden absolute left-[-12px] bottom-full mb-2 w-[180px] bg-gray-800/80 text-white text-sm rounded-lg p-3 z-50">
-                            <div className="text-gray-200">일등으로 출석한 사람이</div>
-                            <div className="text-gray-200">메시지를 수정할 수 있어요.</div>
-
-                            <div className="absolute left-4 top-full w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[6px] border-t-gray-800/80"></div>
-                          </div>
-                        </div>
-                        {(() => {
-                          const today = new Date();
-                          today.setHours(0, 0, 0, 0);
-                          const selectedDateObj = new Date(selectedDate);
-                          selectedDateObj.setHours(0, 0, 0, 0);
-                          const isToday = today.getTime() === selectedDateObj.getTime();
-
-                          // 오늘 날짜이고 현재 사용자가 일등인 경우에만 버튼 표시
-                          const userStatus = memberStatus[selectedSubscription?.id_coffice]
-                            ?.dates[selectedDate]
-                            ?.members[selectedUserData?.id_user]
-                            ?.status_user;
-
-                          return isToday && userStatus === '일등' && (
-                            <button 
-                              onClick={() => setShowMessageModal(true)}
-                              className="ml-2 px-2 py-0.5 text-black text-xs rounded-lg bg-[#FFFF00] border-1 border-black"
-                            >
-                              작성
-                            </button>
-                          );
-                        })()}
-                      </div>
-                      <div className="w-full ">
-                        <div className="text-gray-600 text-lg font-medium break-words whitespace-pre-line mb-[3vh]" 
-                             style={{ maxHeight: '2.5em', lineHeight: '1.25em', overflow: 'hidden' }}>
-                          {cofficeMessage}
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="h-[42vh] flex flex-col mt-[3vh]">
-                      <div className="text-[20px] font-semibold text-gray-800 ml-4 mb-3">
-                        출석 현황
-                      </div>
-                      <div className="flex-1 overflow-y-auto mb-4  min-h-[180px]">
-                        <div className="flex gap-2 overflow-x-auto scrollbar-hide px-4 pb-4">
-                          {selectedSubscription.dates
-                            .find(date => date.date === selectedDate)
-                            ?.members
-                            .sort((a, b) => {
-                              const statusOrder = {
-                                '일등': 0,
-                                '출석': 1,
-                                '지각': 2,
-                                '결석': 3,
-                                null: 4 // 대기 상태
-                              };
-                              
-                              const statusA = memberStatus[selectedSubscription.id_coffice]
-                                ?.dates[selectedDate]
-                                ?.members[a.id_user]
-                                ?.status_user;
-                              
-                              const statusB = memberStatus[selectedSubscription.id_coffice]
-                                ?.dates[selectedDate]
-                                ?.members[b.id_user]
-                                ?.status_user;
-                              
-                              return statusOrder[statusA] - statusOrder[statusB];
-                            })
-                            .map(member => {
-                              const status = memberStatus[selectedSubscription.id_coffice]
-                                ?.dates[selectedDate]
-                                ?.members[member.id_user];
-                              const memberInfo = membersInfo[member.id_user];
-                              const isCurrentUser = member.id_user === selectedUserData?.id_user;
-
-                              return (
-                                <MemberCard 
-                                  key={`${member.id_user}-${selectedDate}`}
-                                  member={member}
-                                  date={selectedDate}
-                                  officeId={selectedSubscription.id_coffice}
-                                  memberInfo={memberInfo}
-                                  status={status}
-                                  selectedUserData={selectedUserData}
-                                  memberStatus={memberStatus}
-                                />
-                              );
-                            })}
-                        </div>
-                      </div>
-                      
-                      {/* 출석 버튼 영역 */}
-                      <div className="py-4 flex justify-center mb-[2vh]">
+              ) : (
+                // 기존 컨텐츠
+                <>
+                  {subscriptionDetails.length > 0 && userData && (
+                    <div className="flex justify-between items-start w-full max-w-[1200px] mx-auto px-4 h-[8vh]">
+                      <div className="relative" ref={dropdownRef}>
                         <button
-                          onClick={createAttendanceEvent}
-                          disabled={isButtonDisabled || isLoading}
-                          className={`
-                            btn w-[288px] h-[48px] mx-auto block
-                            border border-[#c8c8c8] normal-case rounded-lg
-                            relative
-                            ${isButtonDisabled || isLoading
-                              ? 'bg-[#DEDEDE] text-black hover:bg-[#DEDEDE]' 
-                              : 'bg-[#FFFF00] text-black hover:bg-[#FFFF00]'
-                            }
-                          `}
+                          onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                          className={`flex items-center min-w-[250px] w-auto h-[50px] px-5 py-3 border-1 border-gray-400 rounded-lg ${isDropdownOpen ? 'bg-gray-100' : 'bg-gray-100'}`}
                         >
-                          <div className="flex items-center justify-center gap-2">
-                            {isLoading ? (
-                              <span className="loading loading-spinner loading-sm"></span>
-                            ) : (
-                              <span className="text-[16px] font-semibold">{attendanceMessage}</span>
-                            )}
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 text-black whitespace-nowrap">
+                              <span className="text-[17px] font-bold leading-none flex items-center">
+                                {selectedSubscription?.name_office || subscriptionDetails[0].name_office}
+                              </span>
+                              <span className="text-gray-500 leading-none flex items-center">
+                                {parseInt((selectedSubscription?.month_coffice || subscriptionDetails[0].month_coffice).substring(2, 4))}월
+                              </span>
+                              <span className="text-gray-500 leading-none flex items-center">
+                                {selectedSubscription?.groupname_coffice || subscriptionDetails[0].groupname_coffice}
+                              </span>
+                            </div>
                           </div>
                         </button>
+
+                        {isDropdownOpen && (
+                          <div className="absolute top-full left-0 mt-1 z-50 bg-white rounded-lg shadow-lg border">
+                            {subscriptionDetails
+                              .filter(subscription => 
+                                selectedSubscription ? 
+                                  subscription.id_coffice !== selectedSubscription.id_coffice : 
+                                  subscription.id_coffice !== subscriptionDetails[0].id_coffice
+                              )
+                              .map((subscription) => (
+                                <button
+                                  key={subscription.id_coffice}
+                                  onClick={() => {
+                                    setSelectedSubscription(subscription)
+                                    setIsDropdownOpen(false)
+                                  }}
+                                  className="flex items-center min-w-[260px] w-auto h-[50px] px-5 py-3 hover:bg-gray-50"
+                                >
+                                  <div className="flex-1">
+                                    <div className="flex items-center gap-2 text-black whitespace-nowrap">
+                                      <span className="text-[17px] font-bold leading-none">
+                                        {subscription.name_office}
+                                      </span>
+                                      <span className="text-gray-500 leading-none">
+                                        {parseInt(subscription.month_coffice.substring(2, 4))}월
+                                      </span>
+                                      <span className="text-gray-500 leading-none">
+                                        {subscription.groupname_coffice}
+                                      </span>
+                                    </div>
+                                  </div>
+                                </button>
+                              ))}
+                          </div>
+                        )}
+                      </div>
+
+                      <div 
+                        className="flex flex-col items-center cursor-pointer"
+                        onClick={() => setShowProfileModal(true)}
+                      >
+                        <div className="rounded-lg overflow-hidden border-1 border-gray-400 w-[50px] aspect-square">
+                          <ProfileCharacter
+                            profileStyle={selectedUserData?.profilestyle_user}
+                            size={48}
+                            className="profile-main"
+                          />
+                        </div>
                       </div>
                     </div>
-                  </>
-                )}
-              </>
-            )}
-          </>
-        )}
+                  )}
 
-        <style jsx global>{`
-          .scrollbar-hide {
-            -ms-overflow-style: none;  /* IE and Edge */
-            scrollbar-width: none;     /* Firefox */
-          }
-          .scrollbar-hide::-webkit-scrollbar {
-            display: none;  /* Chrome, Safari, Opera */
-          }
-          * {
-            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
-          }
-        `}</style>
-      </main>
+                  {showProfileModal && (
+                    <ProfileEditModal
+                      user={selectedUserData}
+                      onClose={handleCloseProfileModal}
+                      onUpdate={handleProfileUpdate}
+                      className="text-black"
+                    />
+                  )}
+
+                  {selectedSubscription && (
+                    <>
+                      <div className="h-[6vh] flex items-center mt-[max(10px,1vh)]">
+                        <div className="flex gap-[3vw] overflow-x-auto scrollbar-hide px-4 py-2 justify-center w-full">
+                          {selectedSubscription.dates.map((dateInfo) => {
+                            const isPast = compareDates(dateInfo.date, userData.timestamp) < 0;
+                            const isSelected = dateInfo.date === selectedDate;
+                            const date = new Date(dateInfo.date);
+                            const month = String(date.getMonth() + 1).padStart(2, '0');
+                            const day = String(date.getDate()).padStart(2, '0');
+                            
+                            let offDates = [];
+                            if (selectedSubscription.offdate_coffice) {
+                              if (Array.isArray(selectedSubscription.offdate_coffice)) {
+                                offDates = selectedSubscription.offdate_coffice;
+                              } else if (typeof selectedSubscription.offdate_coffice === 'string') {
+                                offDates = selectedSubscription.offdate_coffice.split(',').map(d => d.trim());
+                              }
+                            }
+                            
+                            const isOffDay = offDates.includes(dateInfo.date);
+
+                            return (
+                              <button
+                                key={dateInfo.date}
+                                onClick={() => !isOffDay && setSelectedDate(dateInfo.date)}
+                                disabled={isOffDay}
+                                className={`
+                                  shrink grow min-w-[45px] max-w-[60px] h-[5vh] 
+                                  flex items-center justify-center 
+                                  rounded-full text-[13px] border-1 border-gray-350
+                                  ${isOffDay
+                                    ? 'bg-red-100 text-red-500 cursor-not-allowed'
+                                    : isSelected
+                                      ? 'bg-[#FFFF00] text-black border-black'
+                                      : isPast
+                                        ? 'bg-gray-100 text-gray-500 border-gray-200'
+                                        : 'bg-white text-black hover:bg-gray-50'
+                                    }
+                                `}
+                              >
+                                <span className="font-medium text-[13px] whitespace-nowrap">
+                                  {`${month}/${day}`}
+                                </span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                      <div className="h-[18vh] flex flex-col justify-center">
+                        <Timer 
+                          selectedSubscription={selectedSubscription} 
+                          officeInfo={officeInfo}
+                          selectedDate={selectedDate}
+                        />
+                      </div>
+
+                      <div className="flex flex-col h-[10vh] justify-center px-4 mt-[8vh] pb-[3vh]">
+                        <div className="flex items-center gap-0 mt-[max(20px,5vh)] mb-2">
+                          <div className="text-[19px] font-semibold text-gray-800 ">1등의 메시지</div>
+                          <div className="relative">
+                            <div 
+                              className="w- h-5 flex items-center justify-center cursor-pointer"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                const tooltip = e.currentTarget.nextElementSibling;
+                                const allTooltips = document.querySelectorAll('.message-tooltip');
+                                
+                                allTooltips.forEach(t => {
+                                  if (t !== tooltip) t.classList.add('hidden');
+                                });
+                                
+                                tooltip.classList.toggle('hidden');
+                                
+                                setTimeout(() => {
+                                  tooltip.classList.add('hidden');
+                                }, 5000);
+                              }}
+                            >
+                              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                              </svg>
+                            </div>
+                            <div className="message-tooltip hidden absolute left-[-12px] bottom-full mb-2 w-[180px] bg-gray-800/80 text-white text-sm rounded-lg p-3 z-50">
+                              <div className="text-gray-200">일등으로 출석한 사람이</div>
+                              <div className="text-gray-200">메시지를 수정할 수 있어요.</div>
+
+                              <div className="absolute left-4 top-full w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[6px] border-t-gray-800/80"></div>
+                            </div>
+                          </div>
+                          {/* IIFE를 제거하고 일반 JSX로 변경 */}
+                          {(() => {
+                            const today = new Date();
+                            today.setHours(0, 0, 0, 0);
+                            const selectedDateObj = new Date(selectedDate);
+                            selectedDateObj.setHours(0, 0, 0, 0);
+                            const isToday = today.getTime() === selectedDateObj.getTime();
+
+                            const userStatus = memberStatus[selectedSubscription?.id_coffice]
+                              ?.dates[selectedDate]
+                              ?.members[selectedUserData?.id_user]
+                              ?.status_user;
+
+                            if (isToday && userStatus === '일등') {
+                              return (
+                                <button 
+                                  onClick={() => {
+                                    console.log('버튼 클릭됨'); // 디버깅용
+                                    setShowMessageModal(true);
+                                  }}
+                                  className="ml-2 px-2 py-0.5 text-black text-xs rounded-lg bg-[#FFFF00] border-1 border-black"
+                                >
+                                  작성
+                                </button>
+                              );
+                            }
+                            return null;
+                          })()}
+                        </div>
+                        <div className="w-full ">
+                          <div className="text-gray-600 text-lg font-medium break-words whitespace-pre-line mb-[3vh]" 
+                               style={{ maxHeight: '2.5em', lineHeight: '1.25em', overflow: 'hidden' }}>
+                            {cofficeMessage}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="h-[42vh] flex flex-col mt-[3vh]">
+                        <div className="text-[20px] font-semibold text-gray-800 ml-4 mb-3">
+                          출석 현황
+                        </div>
+                        <div className="flex-1 overflow-y-auto mb-4  min-h-[180px]">
+                          <div className="flex gap-2 overflow-x-auto scrollbar-hide px-4 pb-4">
+                            {selectedSubscription.dates
+                              .find(date => date.date === selectedDate)
+                              ?.members
+                              .sort((a, b) => {
+                                const statusOrder = {
+                                  '일등': 0,
+                                  '출석': 1,
+                                  '지각': 2,
+                                  '결석': 3,
+                                  null: 4 // 대기 상태
+                                };
+                                
+                                const statusA = memberStatus[selectedSubscription.id_coffice]
+                                  ?.dates[selectedDate]
+                                  ?.members[a.id_user]
+                                  ?.status_user;
+                                
+                                const statusB = memberStatus[selectedSubscription.id_coffice]
+                                  ?.dates[selectedDate]
+                                  ?.members[b.id_user]
+                                  ?.status_user;
+                                
+                                return statusOrder[statusA] - statusOrder[statusB];
+                              })
+                              .map(member => {
+                                const status = memberStatus[selectedSubscription.id_coffice]
+                                  ?.dates[selectedDate]
+                                  ?.members[member.id_user];
+                                const memberInfo = membersInfo[member.id_user];
+                                const isCurrentUser = member.id_user === selectedUserData?.id_user;
+
+                                return (
+                                  <MemberCard 
+                                    key={`${member.id_user}-${selectedDate}`}
+                                    member={member}
+                                    date={selectedDate}
+                                    officeId={selectedSubscription.id_coffice}
+                                    memberInfo={memberInfo}
+                                    status={status}
+                                    selectedUserData={selectedUserData}
+                                    memberStatus={memberStatus}
+                                  />
+                                );
+                              })}
+                          </div>
+                        </div>
+                        
+                        {/* 출석 버튼 영역 */}
+                        <div className="py-4 flex justify-center mb-[2vh]">
+                          <button
+                            onClick={createAttendanceEvent}
+                            disabled={isButtonDisabled || isLoading}
+                            className={`
+                              btn w-[288px] h-[48px] mx-auto block
+                              border border-[#c8c8c8] normal-case rounded-lg
+                              relative
+                              ${isButtonDisabled || isLoading
+                                ? 'bg-[#DEDEDE] text-black hover:bg-[#DEDEDE]' 
+                                : 'bg-[#FFFF00] text-black hover:bg-[#FFFF00]'
+                              }
+                            `}
+                          >
+                            <div className="flex items-center justify-center gap-2">
+                              {isLoading ? (
+                                <span className="loading loading-spinner loading-sm"></span>
+                              ) : (
+                                <span className="text-[16px] font-semibold">{attendanceMessage}</span>
+                              )}
+                            </div>
+                          </button>
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </>
+              )}
+            </>
+          )}
+
+          <style jsx global>{`
+            .scrollbar-hide {
+              -ms-overflow-style: none;  /* IE and Edge */
+              scrollbar-width: none;     /* Firefox */
+            }
+            .scrollbar-hide::-webkit-scrollbar {
+              display: none;  /* Chrome, Safari, Opera */
+            }
+            * {
+              font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+            }
+          `}</style>
+        </main>
+      </div>
+      
+      {/* 모달을 최상위로 이동하고 z-index 높게 설정 */}
+      {showMessageModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[100]">
+          <div className="bg-white rounded-2xl p-6 w-[300px]">
+            <h3 className="text-lg font-bold mb-4">우리반 메시지 수정</h3>
+            <div className="space-y-2">
+              <textarea 
+                value={newMessage}
+                onChange={(e) => setNewMessage(e.target.value)}
+                className="w-full border rounded-xl px-4 py-3 text-base resize-none"
+                rows={4}
+                maxLength={100}
+                placeholder="메시지를 입력하세요"
+              />
+              <p className="text-sm text-gray-500">
+                최대 100자까지 입력 가능합니다. ({newMessage.length}/100)
+              </p>
+            </div>
+            <div className="flex gap-2 mt-4">
+              <button 
+                onClick={() => setShowMessageModal(false)}
+                className="flex-1 btn btn-outline"
+              >
+                취소
+              </button>
+              <button 
+                onClick={async () => {
+                  await updateCofficeMessage();
+                  setShowMessageModal(false);
+                }}
+                className="flex-1 btn bg-[#FFFF00] hover:bg-[#FFFF00] text-black border-1 border-black"
+              >
+                저장
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
