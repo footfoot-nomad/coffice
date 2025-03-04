@@ -124,7 +124,7 @@ const Timer = ({ selectedSubscription, officeInfo, selectedDate }) => {
       <div className="text-[20px] font-semibold text-gray-800 mt-[2vh] mb-3 px-4">
         남은 시간
       </div>
-      <div className="border-2 border-gray-300 bg-gray-100 rounded-lg p-3 w-full max-w-[320px] mx-auto h-[12vh]">
+      <div className="border-2 border-gray-400 bg-gray-100 rounded-lg p-3 w-full max-w-[320px] mx-auto h-[12vh]">
         <div className="flex justify-center items-center h-full">
           <span className="font-mono text-[40px] text-black">
             {`${time.hours} : ${time.minutes} : ${time.seconds}`}
