@@ -1646,7 +1646,7 @@ export default function Home() {
   return (
     <div className="relative"> {/* 기존 최상위 div */}
       <div className="flex justify-center min-h-screen bg-gray-50">
-        <main className="w-full max-w-[430px] min-h-screen bg-white p-4 mx-auto font-pretendard">
+        <main className="w-full max-w-[430px] h-[100vh] overflow-hidden bg-white p-4 mx-auto font-pretendard">
           {showAuth ? (
             <AuthForm onAuthSuccess={handleAuthSuccess} />
           ) : (
@@ -1887,9 +1887,9 @@ export default function Home() {
                         <div className="text-[20px] font-semibold text-gray-800 ml-4 mb-3">
                           출석 현황
                         </div>
-                        {/* 출석 카드 영역 */}
+                        {/* 멤버 카드 영역 */}
                         <div className="flex-1 overflow-y-auto mb-0  min-h-[180px]">
-                          <div className="flex gap-2 overflow-x-auto scrollbar-hide px-4 pb-0">
+                          <div className="flex gap-2 overflow-x-auto scrollbar-hide px-4 pb-3">
                             {selectedSubscription.dates
                               .find(date => date.date === selectedDate)
                               ?.members
@@ -1979,6 +1979,12 @@ export default function Home() {
             }
             * {
               font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+            }
+            main {
+              touch-action: none;
+              -webkit-overflow-scrolling: none;
+              overscroll-behavior: none;
+              user-select: none;
             }
           `}</style>
         </main>
