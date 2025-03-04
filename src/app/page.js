@@ -2003,10 +2003,10 @@ export default function Home() {
                                 disabled={isButtonDisabled || isLoading}
                                 className={`
                                   btn w-[288px] h-[48px] mx-auto block
-                                  border border-[#c8c8c8] normal-case rounded-lg
+                                  border-2 border-black normal-case rounded-lg
                                   relative
                                   ${isButtonDisabled || isLoading
-                                    ? 'bg-[#DEDEDE] text-black hover:bg-[#DEDEDE]' 
+                                    ? 'bg-[#DEDEDE] text-black hover:bg-[#DEDEDE] border-[#c8c8c8]' 
                                     : 'bg-[#FFFF00] text-black hover:bg-[#FFFF00]'
                                   }
                                 `}

@@ -456,7 +456,7 @@ export default function ProfileEditModal({ user, onClose, onUpdate }) {
           <button
             type="button"
             onClick={handleLogout}
-            className="btn w-[288px] h-[48px] mx-auto block border border-[#c8c8c8] normal-case rounded-lg bg-[#FFFF00] hover:bg-[#FFFF00] text-black"
+            className="btn w-[288px] h-[48px] mx-auto block border border-[#c8c8c8] normal-case rounded-lg bg-[#FF4A1F] hover:bg-[#FF4A1F] text-white"
           >
             <span className="text-[16px] font-semibold">로그아웃</span>
           </button>
@@ -466,20 +466,20 @@ export default function ProfileEditModal({ user, onClose, onUpdate }) {
       {/* 이름 수정 확인 모달 추가 */}
       {isConfirmModalOpen && (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-[100]">
-          <div className="bg-white rounded-2xl p-6 w-[300px]">
-            <h3 className="text-lg font-bold mb-4">이름을 수정하시겠습니까?</h3>
+          <div className="bg-white rounded-2xl p-6 w-[300px] border border-black">
+            <h3 className="text-lg font-bold mb-4 text-black">이름을 수정하시겠습니까?</h3>
             <div className="flex gap-2">
               <button
                 type="button"
                 onClick={() => setIsConfirmModalOpen(false)}
-                className="flex-1 btn btn-outline"
+                className="flex-1 btn border border-black text-black shadow-none"
               >
                 취소
               </button>
               <button
                 type="button"
                 onClick={startNameEdit}
-                className="flex-1 btn bg-[#FFFF00] hover:bg-[#FFFF00] text-black border-1 border-black"
+                className="flex-1 btn bg-[#FFFF00] hover:bg-[#FFFF00] text-black border border-black shadow-none"
               >
                 수정
               </button>
@@ -491,19 +491,19 @@ export default function ProfileEditModal({ user, onClose, onUpdate }) {
       {/* 기존 이름 수정 모달 */}
       {isNameModalOpen && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[100]">
-          <div className="bg-white rounded-2xl p-6 w-[300px]">
-            <h3 className="text-lg font-bold mb-4">이름 수정</h3>
+          <div className="bg-white rounded-2xl p-6 w-[300px] border border-black">
+            <h3 className="text-lg font-bold mb-4 text-black">이름 수정</h3>
             <form onSubmit={handleNameSubmit}>
               <div className="space-y-2">
                 <input
                   type="text"
                   value={newName}
                   onChange={(e) => setNewName(e.target.value)}
-                  className="w-full border rounded-xl px-4 py-3 text-base"
+                  className="w-full border border-black rounded-xl px-4 py-3 text-base text-black"
                   maxLength={6}
                   required
                 />
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-black">
                   최대 6자까지 입력 가능합니다. ({newName.length}/6)
                 </p>
               </div>
@@ -511,13 +511,13 @@ export default function ProfileEditModal({ user, onClose, onUpdate }) {
                 <button
                   type="button"
                   onClick={() => setIsNameModalOpen(false)}
-                  className="flex-1 btn btn-outline"
+                  className="flex-1 btn border border-black text-black shadow-none"
                 >
                   취소
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 btn bg-[#FFFF00] hover:bg-[#FFFF00] text-black border-1 border-black"
+                  className="flex-1 btn bg-[#FFFF00] hover:bg-[#FFFF00] text-black border border-black shadow-none"
                 >
                   저장
                 </button>
@@ -722,7 +722,7 @@ export default function ProfileEditModal({ user, onClose, onUpdate }) {
               <button
                 type="button"
                 onClick={() => setIsCharacterModalOpen(false)}
-                className="flex-1 btn btn-outline"
+                className="flex-1 btn border border-black text-black"
               >
                 취소
               </button>
@@ -761,7 +761,7 @@ export default function ProfileEditModal({ user, onClose, onUpdate }) {
                     alert('프로필 업데이트에 실패했습니다. 다시 시도해주세요.');
                   }
                 }}
-                className="flex-1 btn bg-[#FFFF00] hover:bg-[#FFFF00] text-black border-1 border-black"
+                className="flex-1 btn bg-[#FFFF00] hover:bg-[#FFFF00] text-black border border-black shadow-none"
               >
                 적용하기
               </button>
