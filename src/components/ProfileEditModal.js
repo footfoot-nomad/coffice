@@ -456,7 +456,7 @@ export default function ProfileEditModal({ user, onClose, onUpdate }) {
           <button
             type="button"
             onClick={handleLogout}
-            className="btn w-[288px] h-[48px] mx-auto block bg-[#FF4A1F] hover:bg-[#FF4A1F] text-white border-none"
+            className="btn btn-primary w-[288px] h-[48px] mx-auto block bg-[#FF4A1F] hover:bg-[#FF4A1F] text-white"
           >
             <span className="text-[16px] font-semibold">로그아웃</span>
           </button>
@@ -472,14 +472,14 @@ export default function ProfileEditModal({ user, onClose, onUpdate }) {
               <button
                 type="button"
                 onClick={() => setIsConfirmModalOpen(false)}
-                className="btn flex-1 btn-outline"
+                className="btn flex-1 btn-default"
               >
                 취소
               </button>
               <button
                 type="button"
                 onClick={startNameEdit}
-                className="btn flex-1 btn-outline bg-[#FFFF00] hover:bg-[#FFFF00] text-black"
+                className="btn flex-1 btn-primary"
               >
                 수정
               </button>
@@ -511,13 +511,13 @@ export default function ProfileEditModal({ user, onClose, onUpdate }) {
                 <button
                   type="button"
                   onClick={() => setIsNameModalOpen(false)}
-                  className="btn flex-1 btn-outline"
+                  className="btn flex-1 btn-default"
                 >
                   취소
                 </button>
                 <button
                   type="submit"
-                  className="btn flex-1 btn-outline bg-[#FFFF00] hover:bg-[#FFFF00] text-black"
+                  className="btn flex-1 btn-primary"
                 >
                   저장
                 </button>
@@ -722,7 +722,7 @@ export default function ProfileEditModal({ user, onClose, onUpdate }) {
               <button
                 type="button"
                 onClick={() => setIsCharacterModalOpen(false)}
-                className="btn flex-1 btn-outline"
+                className="btn flex-1 btn-default"
               >
                 취소
               </button>
@@ -761,7 +761,7 @@ export default function ProfileEditModal({ user, onClose, onUpdate }) {
                     alert('프로필 업데이트에 실패했습니다. 다시 시도해주세요.');
                   }
                 }}
-                className="btn flex-1 btn-outline bg-[#FFFF00] hover:bg-[#FFFF00] text-black"
+                className="btn flex-1 btn-primary"
               >
                 적용하기
               </button>

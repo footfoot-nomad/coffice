@@ -124,7 +124,7 @@ const Timer = ({ selectedSubscription, officeInfo, selectedDate }) => {
       <div className="text-[20px] font-semibold text-gray-800 mt-[2vh] mb-3 px-4">
         남은 시간
       </div>
-      <div className="border-2 border-gray-400 bg-gray-100 rounded-lg p-3 w-full max-w-[320px] mx-auto h-[12vh]">
+      <div className="border-2 border-black bg-gray-100 rounded-lg p-3 w-full max-w-[320px] mx-auto h-[12vh]">
         <div className="flex justify-center items-center h-full">
           <span className="font-mono text-[40px] text-black">
             {`${time.hours} : ${time.minutes} : ${time.seconds}`}
@@ -1707,7 +1707,7 @@ export default function Home() {
                       <div className="relative" ref={dropdownRef}>
                         <button
                           onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                          className={`flex items-center min-w-[250px] w-auto h-[50px] px-5 py-3 border-1 border-gray-400 rounded-lg ${isDropdownOpen ? 'bg-gray-100' : 'bg-gray-100'}`}
+                          className={`flex items-center min-w-[250px] w-auto h-[50px] px-5 py-3 border-1 border-black rounded-lg ${isDropdownOpen ? 'bg-gray-100' : 'bg-gray-100'}`}
                         >
                           <div className="flex-1">
                             <div className="flex items-center gap-2 text-black whitespace-nowrap">
@@ -1764,7 +1764,7 @@ export default function Home() {
                         className="flex flex-col items-center cursor-pointer"
                         onClick={() => setShowProfileModal(true)}
                       >
-                        <div className="rounded-lg overflow-hidden border-1 border-gray-400 w-[50px] aspect-square">
+                        <div className="rounded-lg overflow-hidden border-1 border-black w-[50px] aspect-square">
                           <ProfileCharacter
                             profileStyle={selectedUserData?.profilestyle_user}
                             size={48}
@@ -2003,11 +2003,11 @@ export default function Home() {
                                 disabled={isButtonDisabled || isLoading}
                                 className={`
                                   btn btn-circle w-[288px] h-[48px] mx-auto block
-                                  border-2 border-black normal-case
+                                  border-1 border-black normal-case
                                   relative
                                   ${isButtonDisabled || isLoading
-                                    ? 'bg-[#DEDEDE] text-black hover:bg-[#DEDEDE] border-[#c8c8c8]' 
-                                    : 'bg-[#FFFF00] text-black hover:bg-[#FFFF00]'
+                                    ? 'bg-[#DEDEDE] text-black hover:bg-[#DEDEDE] border-1 border-black' 
+                                    : 'bg-[#FFFF00] text-black hover:bg-[#FFFF00] border-1 border-black'
                                   }
                                 `}
                               >
