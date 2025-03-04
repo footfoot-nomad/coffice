@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
-import { defaultCharacterDrawing } from '../app/components/character'
-import ProfileCharacter from '../app/components/ProfileCharacter'
+import { defaultCharacterDrawing } from './character'
+import ProfileCharacter from './ProfileCharacter'
 
 export default function ProfileEditModal({ user, onClose, onUpdate }) {
   const [profileStyle, setProfileStyle] = useState(user?.profilestyle_user || '#f3f4f6')

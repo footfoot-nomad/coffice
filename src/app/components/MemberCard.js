@@ -2,7 +2,7 @@
 
 import React, { useState, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
-import ProfileCharacter from '@/components/ProfileCharacter';
+import ProfileCharacter from '@/app/components/ProfileCharacter';
 
 const MemberCard = ({ 
   member, 
@@ -28,18 +28,18 @@ const MemberCard = ({
   const isCurrentUser = member.id_user === selectedUserData?.id_user;
 
   const getStatusStyle = () => {
-    if (!status?.status_user) return { borderColor: '#E0E0E0' };
+    if (!status?.status_user) return { borderColor: '#000000' };
     
     switch (status.status_user) {
       case '일등':
       case '출석':
-        return { borderColor: '#2196F3' };
+        return { borderColor: '#000000' };
       case '지각':
-        return { borderColor: '#FF9800' };
+        return { borderColor: '#000000' };
       case '결석':
-        return { borderColor: '#F44336' };
+        return { borderColor: '#000000' };
       default:
-        return { borderColor: '#E0E0E0' };
+        return { borderColor: '#000000' };
     }
   };
 

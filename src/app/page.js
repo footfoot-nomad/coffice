@@ -2,8 +2,8 @@
 
 import React, { useState, useEffect, useRef } from 'react'
 import { supabase } from '@/lib/supabase'
-import ProfileEditModal from '@/components/ProfileEditModal'
-import ProfileCharacter from '@/components/ProfileCharacter'
+import ProfileEditModal from './components/ProfileEditModal'
+import ProfileCharacter from './components/ProfileCharacter'
 import Timer from './components/Timer'
 import MemberCard from './components/MemberCard'
 import AuthForm from './components/AuthForm'
