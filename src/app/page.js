@@ -498,21 +498,8 @@ const MemberCard = ({
       )}
       
       {/* 카드 본체 */}
-      <div 
-        className="relative cursor-pointer" 
-        onClick={handleCardClick}
-      >
-        {/* 출석 순서 뱃지 */}
-        {(status?.status_user === '출석' || status?.status_user === '일등' || status?.status_user === '지각') && (
-          <div className="absolute bottom-[-12px] left-1/2 transform -translate-x-1/2 z-10">
-            <div className="w-[24px] h-[24px] rounded-full bg-[#FFFF00] border border-black flex items-center justify-center shadow-xs">
-              <span className="text-[14px] font-bold text-black">
-                {getAttendanceOrder(memberStatus, date, officeId, member.id_user)}
-              </span>
-            </div>
-          </div>
-        )}
-        <div ref={cardRef} className="shrink-0 flex flex-col items-center w-[25vw] min-w-[90px] max-w-[120px] border-2 border-gray-600 rounded-lg shadow-xs bg-white overflow-hidden">
+      <div className="flex flex-col items-center">
+        <div ref={cardRef} className="shrink-0 flex flex-col items-center w-[25vw] min-w-[90px] max-w-[120px] border-2 border-gray-600 rounded-lg shadow-md bg-white overflow-hidden relative">
           {/* 출석 뱃지 */}
           {status?.status_user && (
             <div className="absolute right-1 top-1 z-10">
@@ -555,6 +542,17 @@ const MemberCard = ({
             </span>
           </div>
         </div>
+        
+        {/* 출석 순서 뱃지 */}
+        {(status?.status_user === '출석' || status?.status_user === '일등' || status?.status_user === '지각') && (
+          <div className="mt-[-13px] z-10">
+            <div className="w-[24px] h-[24px] rounded-full bg-[#FFFF00] border border-black flex items-center justify-center shadow-md">
+              <span className="text-[14px] font-bold text-black">
+                {getAttendanceOrder(memberStatus, date, officeId, member.id_user)}
+              </span>
+            </div>
+          </div>
+        )}
       </div>
     </>
   );
@@ -1707,7 +1705,7 @@ export default function Home() {
                       <div className="relative" ref={dropdownRef}>
                         <button
                           onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                          className={`flex items-center min-w-[250px] w-auto h-[50px] px-5 py-3 border-1 border-black rounded-lg ${isDropdownOpen ? 'bg-gray-100' : 'bg-gray-100'}`}
+                          className={`flex items-center min-w-[250px] w-auto h-[50px] px-5 py-3 border-1 border-black rounded-lg shadow-md ${isDropdownOpen ? 'bg-gray-100' : 'bg-gray-100'}`}
                         >
                           <div className="flex-1">
                             <div className="flex items-center gap-2 text-black whitespace-nowrap">
@@ -1764,7 +1762,7 @@ export default function Home() {
                         className="flex flex-col items-center cursor-pointer"
                         onClick={() => setShowProfileModal(true)}
                       >
-                        <div className="rounded-lg overflow-hidden border-1 border-black w-[50px] aspect-square">
+                        <div className="rounded-lg overflow-hidden border-1 border-black w-[50px] aspect-square shadow-md">
                           <ProfileCharacter
                             profileStyle={selectedUserData?.profilestyle_user}
                             size={48}
@@ -1814,7 +1812,7 @@ export default function Home() {
                                 className={`
                                   btn btn-circle shrink grow min-w-[45px] max-w-[60px] h-[5vh] 
                                   flex items-center justify-center 
-                                  border-2 border-black normal-case
+                                  border-2 border-black normal-case shadow-md
                                   ${isOffDay
                                     ? 'bg-red-100 text-red-500 cursor-not-allowed border-red-300'
                                     : isSelected
@@ -1918,7 +1916,7 @@ export default function Home() {
                           출석 현황
                         </div>
                         {/* 멤버 카드 영역 */}
-                        <div className="flex-1 overflow-y-auto mb-0  min-h-[180px]">
+                        <div className="flex-1 overflow-y-auto min-h-[180px]">
                           <div className="flex gap-2 overflow-x-auto scrollbar-hide px-4 pb-3">
                             {selectedSubscription.dates
                               .find(date => date.date === selectedDate)
@@ -2003,8 +2001,7 @@ export default function Home() {
                                 disabled={isButtonDisabled || isLoading}
                                 className={`
                                   btn btn-circle w-[288px] h-[48px] mx-auto block
-                                  border-1 border-black normal-case
-                                  relative
+                                  border-1 border-black normal-case shadow-lg hover:shadow-md transition-shadow
                                   ${isButtonDisabled || isLoading
                                     ? 'bg-[#DEDEDE] text-black hover:bg-[#DEDEDE] border-1 border-black' 
                                     : 'bg-[#FFFF00] text-black hover:bg-[#FFFF00] border-1 border-black'
