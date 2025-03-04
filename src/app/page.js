@@ -120,19 +120,18 @@ const Timer = ({ selectedSubscription, officeInfo, selectedDate }) => {
   const time = formatTime(timeLeft || 0);
 
   return (
-    <div className="flex flex-col items-start h-[22vh] mb-[3vh] mt-[7vh]">
-      <div className="text-[20px] font-semibold text-gray-800 mt-[2vh] mb-3 px-4">
-        남은 시간
-      </div>
-      <div className="border-2 border-black bg-gray-100 rounded-lg p-3 w-full max-w-[320px] mx-auto h-[12vh]">
+    <div className="flex flex-col items-start h-[10vh] w-full px-2">
+      <div className="border-2 border-black bg-gray-100 rounded-lg w-full max-w-[320px] mx-auto h-[10vh]">
         <div className="flex justify-center items-center h-full">
-          <span className="font-mono text-[40px] text-black">
+          <span className="text-[38px] text-black">
             {`${time.hours} : ${time.minutes} : ${time.seconds}`}
           </span>
         </div>
       </div>
-      <div className="w-full h-[1px] bg-gray-200 mt-[3vh]"></div>
+    
     </div>
+    
+    
   );
 };
 
@@ -546,7 +545,7 @@ const MemberCard = ({
         {/* 출석 순서 뱃지 */}
         {(status?.status_user === '출석' || status?.status_user === '일등' || status?.status_user === '지각') && (
           <div className="mt-[-13px] z-10">
-            <div className="w-[24px] h-[24px] rounded-full bg-[#FFFF00] border border-black flex items-center justify-center shadow-md">
+            <div className="w-[24px] h-[24px] rounded-full bg-[#FFFF00] border border-black flex items-center justify-center shadow-md mb-1">
               <span className="text-[14px] font-bold text-black">
                 {getAttendanceOrder(memberStatus, date, officeId, member.id_user)}
               </span>
@@ -1672,13 +1671,18 @@ export default function Home() {
   }, [selectedSubscription]);
 
   return (
-    <div className="relative"> {/* 기존 최상위 div */}
-      <div className="flex justify-center min-h-screen bg-gray-50">
-        <main className="w-full max-w-[430px] h-[100vh] overflow-hidden bg-white p-4 mx-auto font-pretendard">
-          {showAuth ? (
-            <AuthForm onAuthSuccess={handleAuthSuccess} />
-          ) : (
-            <>
+    <main className="min-h-screen bg-gray-50">
+      {showAuth ? (
+        <AuthForm onAuthSuccess={handleAuthSuccess} />
+      ) : (
+        <div className="flex flex-col min-h-screen max-w-3xl mx-auto bg-white shadow-lg">
+          
+          
+
+          {/* 날짜 선택 영역 */}
+          <section className="flex-none p-4 bg-white">
+            <div className="space-y-[1vh]">
+              {/* 기존 날짜 선택 컴포넌트 */}
               {subscriptionDetails.length === 0 ? (
                 // 구독 정보가 없을 때 표시할 화면
                 <div className="fixed inset-0 bg-[#64c1ff] flex flex-col items-center justify-center">
@@ -1701,7 +1705,7 @@ export default function Home() {
                 // 기존 컨텐츠
                 <>
                   {subscriptionDetails.length > 0 && userData && (
-                    <div className="flex justify-between items-start w-full max-w-[1200px] mx-auto h-[8vh]">
+                    <div className="flex justify-between items-start w-full max-w-[1200px] mx-auto h-[7vh]">
                       <div className="relative" ref={dropdownRef}>
                         <button
                           onClick={() => setIsDropdownOpen(!isDropdownOpen)}
@@ -1831,264 +1835,166 @@ export default function Home() {
                           })}
                         </div>
                       </div>
-
-                      <div className="h-[18vh] flex flex-col justify-center">
-                        <Timer 
-                          selectedSubscription={selectedSubscription} 
-                          officeInfo={officeInfo}
-                          selectedDate={selectedDate}
-                        />
-                      </div>
-
-                      <div className="flex flex-col h-[10vh] justify-center px-4 mt-[7vh] pb-[3vh]">
-                        <div className="flex items-center gap-0 mt-[max(10px,2vh)] mb-2">
-                          <div className="text-[19px] font-semibold text-gray-800 ">1등의 메시지</div>
-                          <div className="relative">
-                            <div 
-                              className="w- h-5 flex items-center justify-center cursor-pointer"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                const tooltip = e.currentTarget.nextElementSibling;
-                                const allTooltips = document.querySelectorAll('.message-tooltip');
-                                
-                                allTooltips.forEach(t => {
-                                  if (t !== tooltip) t.classList.add('hidden');
-                                });
-                                
-                                tooltip.classList.toggle('hidden');
-                                
-                                setTimeout(() => {
-                                  tooltip.classList.add('hidden');
-                                }, 5000);
-                              }}
-                            >
-                              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                              </svg>
-                            </div>
-                            <div className="message-tooltip hidden absolute left-[-14px] bottom-full mb-2 w-[180px] bg-gray-800/80 text-white text-sm rounded-lg p-3 z-50">
-                              <div className="text-gray-200">일등으로 출석한 사람이</div>
-                              <div className="text-gray-200">메시지를 수정할 수 있어요.</div>
-
-                              <div className="absolute left-4 top-full w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[6px] border-t-gray-800/80"></div>
-                            </div>
-                          </div>
-                          {/* IIFE를 제거하고 일반 JSX로 변경 */}
-                          {(() => {
-                            const today = new Date();
-                            today.setHours(0, 0, 0, 0);
-                            const selectedDateObj = new Date(selectedDate);
-                            selectedDateObj.setHours(0, 0, 0, 0);
-                            const isToday = today.getTime() === selectedDateObj.getTime();
-
-                            const userStatus = memberStatus[selectedSubscription?.id_coffice]
-                              ?.dates[selectedDate]
-                              ?.members[selectedUserData?.id_user]
-                              ?.status_user;
-
-                            if (isToday && userStatus === '일등') {
-                              return (
-                                <button 
-                                  onClick={() => {
-                                    console.log('버튼 클릭됨'); // 디버깅용
-                                    setShowMessageModal(true);
-                                  }}
-                                  className="ml-2 px-2 py-0.5 text-black text-xs rounded-lg bg-[#FFFF00] border-1 border-black"
-                                >
-                                  작성
-                                </button>
-                              );
-                            }
-                            return null;
-                          })()}
-                        </div>
-                        <div className="w-full ">
-                          <div className="text-gray-600 text-lg font-medium break-words whitespace-pre-line mb-[3vh]" 
-                               style={{ maxHeight: '2.5em', lineHeight: '1.25em', overflow: 'hidden' }}>
-                            {cofficeMessage}
-                          </div>
-                        </div>
-                      </div>
-
-{/* 출석 현황 영역 */}
-                      <div className="h-[35vh] flex flex-col mt-[2vh]">
-                        <div className="text-[20px] font-semibold text-gray-800 ml-4 mb-3">
-                          출석 현황
-                        </div>
-                        {/* 멤버 카드 영역 */}
-                        <div className="flex-1 overflow-y-auto min-h-[180px]">
-                          <div className="flex gap-2 overflow-x-auto scrollbar-hide px-4 pb-3">
-                            {selectedSubscription.dates
-                              .find(date => date.date === selectedDate)
-                              ?.members
-                              .sort((a, b) => {
-                                const statusOrder = {
-                                  '일등': 0,
-                                  '출석': 1,
-                                  '지각': 2,
-                                  '결석': 3,
-                                  null: 4 // 대기 상태
-                                };
-                                
-                                const statusA = memberStatus[selectedSubscription.id_coffice]
-                                  ?.dates[selectedDate]
-                                  ?.members[a.id_user]
-                                  ?.status_user;
-                                
-                                const statusB = memberStatus[selectedSubscription.id_coffice]
-                                  ?.dates[selectedDate]
-                                  ?.members[b.id_user]
-                                  ?.status_user;
-
-                                const timestampA = memberStatus[selectedSubscription.id_coffice]
-                                  ?.dates[selectedDate]
-                                  ?.members[a.id_user]
-                                  ?.timestamp_user;
-
-                                const timestampB = memberStatus[selectedSubscription.id_coffice]
-                                  ?.dates[selectedDate]
-                                  ?.members[b.id_user]
-                                  ?.timestamp_user;
-                                
-                                // 먼저 상태로 정렬
-                                const statusCompare = statusOrder[statusA] - statusOrder[statusB];
-                                
-                                // 상태가 같은 경우 timestamp로 정렬
-                                if (statusCompare === 0 && timestampA && timestampB) {
-                                  return new Date(timestampA) - new Date(timestampB);
-                                }
-                                
-                                return statusCompare;
-                              })
-                              .map(member => {
-                                const status = memberStatus[selectedSubscription.id_coffice]
-                                  ?.dates[selectedDate]
-                                  ?.members[member.id_user];
-                                const memberInfo = membersInfo[member.id_user];
-                                const isCurrentUser = member.id_user === selectedUserData?.id_user;
-
-                                return (
-                                  <MemberCard 
-                                    key={`${member.id_user}-${selectedDate}`}
-                                    member={member}
-                                    date={selectedDate}
-                                    officeId={selectedSubscription.id_coffice}
-                                    memberInfo={memberInfo}
-                                    status={status}
-                                    selectedUserData={selectedUserData}
-                                    memberStatus={memberStatus}
-                                  />
-                                );
-                              })}
-                          </div>
-                        </div>
-                        
-                        {/* 출석 버튼 영역 */}
-                        {(() => {
-                          const today = new Date();
-                          const selectedDateObj = new Date(selectedDate);
-                          
-                          // 날짜 비교를 위해 시간을 00:00:00으로 설정
-                          today.setHours(0, 0, 0, 0);
-                          selectedDateObj.setHours(0, 0, 0, 0);
-                          
-                          const isToday = today.getTime() === selectedDateObj.getTime();
-                          
-                          return isToday ? (
-                            <div className="flex justify-center mb-[2vh]">
-                              <button
-                                onClick={createAttendanceEvent}
-                                disabled={isButtonDisabled || isLoading}
-                                className={`
-                                  btn btn-circle w-[288px] h-[48px] mx-auto block
-                                  border-1 border-black normal-case
-                                  shadow-lg hover:shadow-md transition-shadow
-                                  relative
-                                  ${isButtonDisabled || isLoading
-                                    ? 'bg-[#DEDEDE] text-black hover:bg-[#DEDEDE] border-1 border-black' 
-                                    : 'bg-[#FFFF00] text-black hover:bg-[#FFFF00] border-1 border-black'
-                                  }
-                                `}
-                              >
-                                <div className="flex items-center justify-center gap-2">
-                                  {isLoading ? (
-                                    <span className="loading loading-spinner loading-sm"></span>
-                                  ) : (
-                                    <span className="text-[16px] font-semibold">{attendanceMessage}</span>
-                                  )}
-                                </div>
-                              </button>
-                            </div>
-                          ) : null;
-                        })()}
-                      </div>
                     </>
                   )}
                 </>
               )}
-            </>
-          )}
+            </div>
+          </section>
 
-          <style jsx global>{`
-            .scrollbar-hide {
-              -ms-overflow-style: none;  /* IE and Edge */
-              scrollbar-width: none;     /* Firefox */
-            }
-            .scrollbar-hide::-webkit-scrollbar {
-              display: none;  /* Chrome, Safari, Opera */
-            }
-            * {
-              font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
-            }
-            main {
-              touch-action: none;
-              -webkit-overflow-scrolling: none;
-              overscroll-behavior: none;
-              user-select: none;
-            }
-          `}</style>
-        </main>
-      </div>
-      
-      {/* 모달을 최상위로 이동하고 z-index 높게 설정 */}
-      {showMessageModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[100]">
-          <div className="bg-white rounded-2xl p-6 w-[300px]">
-            <h3 className="text-lg font-bold mb-4">1등의 메시지</h3>
-            <div className="space-y-2">
-              <textarea 
-                value={newMessage}
-                onChange={(e) => setNewMessage(e.target.value)}
-                className="w-full border rounded-xl px-4 py-3 text-base resize-none"
-                rows={4}
-                maxLength={100}
-                placeholder="메시지를 입력하세요"
-              />
-              <p className="text-sm text-gray-500">
-                최대 100자까지 입력 가능합니다. ({newMessage.length}/100)
-              </p>
+          {/* 스톱워치 섹션 */}
+          <section className="flex-none px-4 pt-2 pb-4 h-[20vh] bg-white w-full">
+            <div className="flex flex-col h-full">
+              {/* 남은 시간 타이틀 영역 */}
+              <div className="flex-none px-2 py-2 pb-0">
+                <h2 className="text-lg font-semibold">남은 시간</h2>
+              </div>
+
+              {/* 스톱워치 영역 */}
+              <div className="flex-1 flex items-center justify-center w-full pb-1">
+                <Timer 
+                  selectedSubscription={selectedSubscription} 
+                  officeInfo={officeInfo}
+                  selectedDate={selectedDate}
+                />
+              </div>
             </div>
-            <div className="flex gap-2 mt-4">
-              <button 
-                onClick={() => setShowMessageModal(false)}
-                className="flex-1 btn btn-outline"
-              >
-                취소
-              </button>
-              <button 
-                onClick={async () => {
-                  await updateCofficeMessage();
-                  setShowMessageModal(false);
-                }}
-                className="flex-1 btn bg-[#FFFF00] hover:bg-[#FFFF00] text-black border-1 border-black"
-              >
-                저장
-              </button>
+          </section>
+          <section className="flex-none p-4 pb-1 pt-1 bg-white">
+{/* 중앙 구분선 */}
+<div className="flex justify-center w-full h-[1px] bg-gray-400"></div>  
+</section>
+          {/* 1등의 메시지 영역 */}
+          <section className="flex-none p-4 pb-2 pt-3 bg-white h-[12vh]">
+            <div className="p-2 pt-2 pb-0">
+              <h3 className="font-semibold text-lg">1등 메시지</h3>
+              <div className="flex flex-col p-2 pt-1 min-h-[48px]">
+              <p>{cofficeMessage}</p>
+                </div>
             </div>
-          </div>
+          </section>
+
+          {/* 출석 현황 영역 */}
+          <section className="flex-1 p-4 pt-1 pb-0 bg-white">
+            <h3 className="font-semibold px-2 mb-2 text-lg">출석 현황</h3>
+            <div className="space-y-4">
+              <div className="flex-1 min-h-[100px]">
+                <div className="flex gap-2 overflow-x-auto hide-scrollbar px-4">
+                  {selectedSubscription.dates
+                    .find(date => date.date === selectedDate)
+                    ?.members
+                    .sort((a, b) => {
+                      const statusOrder = {
+                        '일등': 0,
+                        '출석': 1,
+                        '지각': 2,
+                        '결석': 3,
+                        null: 4 // 대기 상태
+                      };
+                      
+                      const statusA = memberStatus[selectedSubscription.id_coffice]
+                        ?.dates[selectedDate]
+                        ?.members[a.id_user]
+                        ?.status_user;
+                      
+                      const statusB = memberStatus[selectedSubscription.id_coffice]
+                        ?.dates[selectedDate]
+                        ?.members[b.id_user]
+                        ?.status_user;
+
+                      const timestampA = memberStatus[selectedSubscription.id_coffice]
+                        ?.dates[selectedDate]
+                        ?.members[a.id_user]
+                        ?.timestamp_user;
+
+                      const timestampB = memberStatus[selectedSubscription.id_coffice]
+                        ?.dates[selectedDate]
+                        ?.members[b.id_user]
+                        ?.timestamp_user;
+                      
+                      // 먼저 상태로 정렬
+                      const statusCompare = statusOrder[statusA] - statusOrder[statusB];
+                      
+                      // 상태가 같은 경우 timestamp로 정렬
+                      if (statusCompare === 0 && timestampA && timestampB) {
+                        return new Date(timestampA) - new Date(timestampB);
+                      }
+                      
+                      return statusCompare;
+                    })
+                    .map(member => {
+                      const status = memberStatus[selectedSubscription.id_coffice]
+                        ?.dates[selectedDate]
+                        ?.members[member.id_user];
+                      const memberInfo = membersInfo[member.id_user];
+                      const isCurrentUser = member.id_user === selectedUserData?.id_user;
+
+                      return (
+                        <MemberCard 
+                          key={`${member.id_user}-${selectedDate}`}
+                          member={member}
+                          date={selectedDate}
+                          officeId={selectedSubscription.id_coffice}
+                          memberInfo={memberInfo}
+                          status={status}
+                          selectedUserData={selectedUserData}
+                          memberStatus={memberStatus}
+                        />
+                      );
+                    })}
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* 출석 버튼 영역 */}
+          <section className="flex-none p-4 bg-white sticky bottom-0">
+            <div className="flex justify-center">
+              {/* 기존 출석 버튼 컴포넌트 */}
+              {(() => {
+                const today = new Date();
+                const selectedDateObj = new Date(selectedDate);
+                
+                // 날짜 비교를 위해 시간을 00:00:00으로 설정
+                today.setHours(0, 0, 0, 0);
+                selectedDateObj.setHours(0, 0, 0, 0);
+                
+                const isToday = today.getTime() === selectedDateObj.getTime();
+                
+                return isToday ? (
+                  <div className="flex justify-center mb-[2vh]">
+                    <button
+                      onClick={createAttendanceEvent}
+                      disabled={isButtonDisabled || isLoading}
+                      className={`
+                        btn btn-circle w-[288px] h-[48px] mx-auto block
+                        shadow-lg hover:shadow-md transition-shadow
+                        relative
+                        ${isButtonDisabled || isLoading
+                          ? 'bg-[#DEDEDE] text-black hover:bg-[#DEDEDE]' 
+                          : 'bg-[#FFFF00] text-black hover:bg-[#FFFF00]'
+                        }
+                      `}
+                    >
+                      <div className="flex items-center justify-center gap-2">
+                        {isLoading ? (
+                          <span className="loading loading-spinner loading-sm"></span>
+                        ) : (
+                          <span className="text-[16px] font-semibold">{attendanceMessage}</span>
+                        )}
+                      </div>
+                    </button>
+                  </div>
+                ) : null;
+              })()}
+            </div>
+          </section>
+
+          {/* 하단 여백 */}
+          <div className="h-[12vh]"></div>
         </div>
       )}
-    </div>
-  )
+    </main>
+  );
 }
 

@@ -50,9 +50,20 @@
   ::backdrop,
   ::file-selector-button {
     border-color: var(--color-gray-800, currentColor);
+
+    
   }
 }
 
+@layer utilities {
+  .hide-scrollbar {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+  }
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;  /* Chrome, Safari and Opera */
+  }
+}
 :root {
   --background: #ffffff;
   --foreground: #171717;
